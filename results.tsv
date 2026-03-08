@@ -63,3 +63,4 @@ bd7ee6c	0.635239	0.137555	3.4	discard	upper beta2 edge on new optimizer
 c9e02f4	0.647611	0.161572	3.4	discard	midpoint beta2 refinement
 4f56ca9	0.770904	0.067686	3.4	discard	retune lr on beta2 peak
 139bf83	0.709471	0.113537	3.4	discard	add pre-RNN local mixer
+96a597f	0.689420	0.117904	3.4	discard	add pre-RNN positional bias

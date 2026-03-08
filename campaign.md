@@ -465,3 +465,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: adding a local temporal convolution before the LSTM is not helping the current encoder. The CNN is already producing sufficiently mixed local width context, and the extra pre-RNN mixer mostly adds optimization burden and steals steps without improving the representation passed to the recurrent head.
 - Evidence: strong. CER regresses heavily, memory rises slightly, and the run completes fewer optimization steps because of the added compute.
 - Next action: stop pushing the pre-RNN convolution direction. A more promising lightweight structure change is to test explicit sequence position information at the same handoff point, because that changes the inductive bias without adding another heavy transformation block.
+
+### Round 66 - `96a597f` - add pre-RNN positional bias
+
+- Result: `val_cer=0.689420`, `word_acc=0.117904`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.067406` CER worse
+- Keypoint: the model does not seem to be missing absolute position information at the CNN-to-sequence handoff. The recurrent stack already captures the needed order bias, and injecting a learned fixed positional signal likely interferes with the translation tolerance that scene-text crops still need.
+- Evidence: strong. The regression is large and comes without any compensating benefit in memory or word accuracy.
+- Next action: stop spending rounds on small handoff embellishments. The stronger inference now is that the current representation is basically good, and the remaining leverage may come from training-efficiency gains within the 5-minute budget, especially options that increase effective steps without changing the task, such as AMP.
