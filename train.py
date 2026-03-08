@@ -122,9 +122,6 @@ class ResNetAsterEncoder(nn.Module):
             elif isinstance(module, (nn.BatchNorm2d, nn.GroupNorm)):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
-        for module in self.modules():
-            if isinstance(module, AsterBlock):
-                nn.init.constant_(module.bn2.weight, 0)
 
     def _make_layer(self, planes, blocks, stride):
         downsample = None
