@@ -105,3 +105,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: stronger dropout is even worse than lighter dropout, so the optimum is not merely “some regularization”; it is specifically close to the current `0.1`. This axis is now well bracketed.
 - Evidence: very clear. Both sides of the dropout sweep regress substantially, which makes the default value look robust rather than accidental.
 - Next action: stop spending rounds on dropout and move to AdamW momentum settings (`betas`), since short-budget sequence training can be sensitive to adaptation timescales even when LR is already tuned.
+
+### Round 21 - `e930dc0` - shorter beta2
+
+- Result: `val_cer=0.781143`, `word_acc=0.037118`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.026450` CER worse
+- Keypoint: shortening AdamW's second-moment timescale to `beta2=0.95` does not help this model exploit the 5-minute budget; it destabilizes enough to wipe out the hoped-for faster adaptation.
+- Evidence: clear. The regression is large, and together with the earlier LR/dropout failures it suggests the current scalar optimization settings are already near a local optimum.
+- Next action: stop pure hyperparameter search and switch to model-structure experiments, starting with a bidirectional GRU head that may trade some recurrent expressivity for more training speed under the fixed wall-clock budget.
