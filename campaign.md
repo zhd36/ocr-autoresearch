@@ -489,3 +489,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: mixed precision is broadly the wrong direction for this setup, not just `fp16` specifically. `bfloat16` avoids the worst numerical collapse, but it still does not improve throughput and still degrades optimization badly enough to lose a large amount of CER.
 - Evidence: strong. The run remains near baseline step count and sample count, but the loss is far above the fp32 best and final recognition quality is much worse.
 - Next action: close the mixed-precision branch and return to simpler underfit-oriented changes. The next likely win is to revisit regularization under the now-correct optimizer, especially whether classifier dropout is still helping at all.
+
+### Round 69 - `e3ebdda` - remove dropout on optimizer peak
+
+- Result: `val_cer=0.692406`, `word_acc=0.120087`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.070392` CER worse
+- Keypoint: even in this short-budget regime, the classifier-side dropout is still doing useful stabilization work. Removing it makes the model fit more noisily rather than more effectively, so the current bottleneck is not excessive regularization.
+- Evidence: strong. CER regresses heavily and the run actually completes fewer steps, so there is no hidden throughput benefit offsetting the worse metric.
+- Next action: stop revisiting dropout. The more plausible remaining lever is now the CTC interface itself, especially whether a small blank-logit bias could improve early alignment dynamics without changing the benchmark or decoder.
