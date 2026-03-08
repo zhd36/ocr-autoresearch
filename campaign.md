@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 99
-- Next round index: 100
+- Current logged rounds: 100
+- Next round index: 101
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -737,3 +737,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: averaging multiple dropout samples inside each training step does not preserve the useful part of the strong-dropout regime. It removes too much of the sharp stochastic pressure that was apparently helping calibrate the one-layer `512` head, while still paying the optimization cost of the noisier setting.
 - Evidence: strong. The run stays healthy and compute remains within budget, but quality drops far enough that this is not a borderline variance result.
 - Next action: close the dropout-noise-shaping branch. The next experiments should change the classifier interface itself, such as the output normalization or logit geometry, because the main remaining signal is still concentrated at the head rather than in the encoder.
+
+### Round 100 - `428475d` - cosine classifier on stable one-layer head
+
+- Result: `val_cer=0.665102`, `word_acc=0.120087`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.065699` CER worse
+- Keypoint: fully normalizing both features and class weights is too aggressive for this OCR CTC head. The model was suffering from overconfident logits, but it still needs per-sample feature magnitude information; erasing that amplitude signal hurts alignment more than it helps calibration.
+- Evidence: strong. The run is healthy, but CER drops far enough while step count also falls slightly (`3894`) that this is a real representational mismatch rather than a lucky miss.
+- Next action: keep the head-side focus but back off to a milder geometry constraint. The next best experiment is a weight-normalized classifier that regularizes class directions without deleting the sequence feature norm.
