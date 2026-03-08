@@ -49,3 +49,4 @@ fd7ffef	0.673208	0.131004	3.4	discard	lower lr further
 4a7ad3c	0.747440	0.091703	3.4	discard	small warmup on conditioned backbone
 d94fa70	0.646758	0.137555	3.4	keep	higher beta2 on conditioned backbone
 fe3e291	0.652730	0.144105	3.4	discard	even higher beta2
+4b623ba	0.656143	0.109170	3.5	discard	EMA on conditioned backbone

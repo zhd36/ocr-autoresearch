@@ -345,3 +345,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: `beta2=0.999` is past the useful smoothing point. It increases word-level exact matches further, but slightly oversmooths the adaptive scaling and gives back character-level precision.
 - Evidence: clear enough to stop this bracket. `0.995` now looks like the center of the useful range.
 - Next action: stop micro-tuning `beta2` and test EMA next, because the current pattern suggests evaluation-time parameter smoothing may help without further slowing online adaptation.
+
+### Round 51 - `4b623ba` - EMA on conditioned backbone
+
+- Result: `val_cer=0.656143`, `word_acc=0.109170`, `memory_gb=3.5`, `status=discard`
+- Delta vs best `d94fa70`: `+0.009385` CER worse
+- Keypoint: EMA is not helping this 5-minute regime. The likely reason is that the best gains are coming from relatively recent updates on a fast-improving trajectory, so averaging parameters backward dilutes useful late-stage specialization.
+- Evidence: clear. The regression is meaningful and the memory cost goes up slightly.
+- Next action: stop exploring heavy parameter smoothing and test a much lighter regularization change next, such as tiny weight decay, which may control overfitting without blurring the online solution.
