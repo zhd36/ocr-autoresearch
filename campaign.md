@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 100
-- Next round index: 101
+- Current logged rounds: 101
+- Next round index: 102
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -745,3 +745,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: fully normalizing both features and class weights is too aggressive for this OCR CTC head. The model was suffering from overconfident logits, but it still needs per-sample feature magnitude information; erasing that amplitude signal hurts alignment more than it helps calibration.
 - Evidence: strong. The run is healthy, but CER drops far enough while step count also falls slightly (`3894`) that this is a real representational mismatch rather than a lucky miss.
 - Next action: keep the head-side focus but back off to a milder geometry constraint. The next best experiment is a weight-normalized classifier that regularizes class directions without deleting the sequence feature norm.
+
+### Round 101 - `f332adb` - weight-normalized classifier on stable one-layer head
+
+- Result: `val_cer=0.685580`, `word_acc=0.120087`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.086177` CER worse
+- Keypoint: the classifier-geometry line is not the right abstraction for this regime. Even the milder weight-normalized head hurts badly, which means the model needs a free linear classifier more than it needs explicit class-direction regularization; the useful calibration effect of high dropout is not equivalent to constraining classifier weights.
+- Evidence: decisive. CER regresses sharply and step count falls to `3412`, so this is both a representation mismatch and an efficiency penalty.
+- Next action: abandon classifier-geometry experiments. The next structural move should keep the free classifier and instead add a learned channel-selection gate on top of the normalized LSTM features, because dropout helped by suppressing channels rather than by constraining class vectors.

@@ -98,3 +98,4 @@ aebe7d7	0.702218	0.117904	3.4	discard	locked dropout on one-layer best
 00fdead	0.665102	0.133188	3.4	discard	light width masking on stable one-layer head
 3741cea	0.643345	0.144105	3.4	discard	multi-sample dropout on high-dropout head
 428475d	0.665102	0.120087	3.4	discard	cosine classifier on stable one-layer head
+f332adb	0.685580	0.120087	3.4	discard	weight-normalized classifier on stable one-layer head
