@@ -441,3 +441,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the optimum is not a broad plateau; it is a narrow alignment. `beta2=0.998` works because it smooths bursty scaling just enough, but even a small extra increase to `0.9985` already makes the optimizer hold stale scale information for too long in this short training budget.
 - Evidence: very strong. CER regresses sharply even though word accuracy ticks up, which indicates the model is becoming more decisive but less character-precise.
 - Next action: freeze `beta2=0.998` as the new optimizer base. The next high-value search should move laterally rather than further up `beta2`, most likely retuning `LR` around this new optimum or re-evaluating lightweight structural changes under the now-correct optimizer.
+
+### Round 63 - `4f56ca9` - retune lr on beta2 peak
+
+- Result: `val_cer=0.770904`, `word_acc=0.067686`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.148890` CER worse
+- Keypoint: once `beta2` is this slow, raising the nominal learning rate is catastrophic. The smoothed scale estimate is helping only when the underlying step size stays restrained; with `5e-4`, the optimizer appears to outrun its own variance calibration and never settles.
+- Evidence: decisive. Both CER and word accuracy collapse, and the late-stage loss remains much too high.
+- Next action: bracket in the opposite direction. The right question is no longer whether `LR` can go higher, but whether the `beta2=0.998` optimum actually wants a slightly smaller step such as `4.25e-4`.

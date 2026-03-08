@@ -61,3 +61,4 @@ a9ee9eb	0.750853	0.100437	3.4	discard	larger batch on conditioned backbone
 5f1c9ca	0.622014	0.159389	3.4	keep	beta2 bracket above new best
 bd7ee6c	0.635239	0.137555	3.4	discard	upper beta2 edge on new optimizer
 c9e02f4	0.647611	0.161572	3.4	discard	midpoint beta2 refinement
+4f56ca9	0.770904	0.067686	3.4	discard	retune lr on beta2 peak
