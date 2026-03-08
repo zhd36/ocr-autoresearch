@@ -377,3 +377,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the best optimizer shape on the new backbone is now clear: more responsive first-moment updates combined with smoother second-moment scaling. Lowering `beta1` to `0.85` helps the optimizer adapt faster without giving up the stabilizing effect of `beta2=0.995`.
 - Evidence: clear. CER improves meaningfully again, even though word accuracy gives back a little from the previous best.
 - Next action: continue the same bracket by testing whether `beta1` should go slightly lower still, starting with `0.8`.
+
+### Round 55 - `066f31e` - lower beta1 bracket
+
+- Result: `val_cer=0.651451`, `word_acc=0.152838`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `34fa0bd`: `+0.009813` CER worse
+- Keypoint: reducing `beta1` further to `0.8` makes updates too reactive. It improves word-level decisiveness, but that extra aggressiveness hurts fine-grained character accuracy.
+- Evidence: clear. The direction changes behavior in a consistent way, but not in the direction we want for CER.
+- Next action: keep `beta1=0.85` as the center and try controlling update spikes with stronger gradient clipping instead of pushing momentum lower.

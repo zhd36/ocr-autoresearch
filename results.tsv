@@ -53,3 +53,4 @@ fe3e291	0.652730	0.144105	3.4	discard	even higher beta2
 db9b06d	0.666809	0.117904	3.4	discard	tiny weight decay on conditioned backbone
 51c91ba	0.669369	0.124454	3.4	discard	higher beta1 on conditioned backbone
 34fa0bd	0.641638	0.126638	3.4	keep	lower beta1 on conditioned backbone
+066f31e	0.651451	0.152838	3.4	discard	lower beta1 bracket
