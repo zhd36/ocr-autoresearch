@@ -697,3 +697,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the high-dropout instability is not caused by a nominal learning rate that is slightly too large. Lowering LR simply undercuts fitting while preserving the same unstable character of the regime.
 - Evidence: strong. Compute stays similar, but recognition quality drops sharply.
 - Next action: move away from step-size stabilization and test moment-based stabilization instead. The most plausible next experiment is a slightly slower second-moment estimate on the high-dropout configuration.
+
+### Round 95 - `a802e69` - stabilize high dropout with slower beta2
+
+- Result: `val_cer=0.601536`, `word_acc=0.163755`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.002133` CER worse
+- Keypoint: the high-dropout regime does respond to moment stabilization. Slowing `beta2` slightly from `0.998` to `0.9985` pulls the brittle `dropout=0.25` setup back into the low-`0.60` range and improves word accuracy, even though it still does not beat the single best run.
+- Evidence: useful and credible. This is close enough to the current best to indicate real signal rather than random survival.
+- Next action: combine the apparent stabilization effect with the more reproducible dropout side. The next most informative run is `dropout=0.2` with `beta2=0.9985`.

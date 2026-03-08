@@ -92,3 +92,4 @@ abf2518	0.633959	0.141921	3.4	discard	midpoint refinement in new dropout peak
 f36e094	0.640785	0.124454	3.4	discard	reproducibility check for new best
 cb1e715	0.618174	0.155022	3.4	discard	reproducibility check for dropout 0.2
 60c00b0	0.668515	0.115721	3.4	discard	stabilize high dropout with lower lr
+a802e69	0.601536	0.163755	3.4	discard	stabilize high dropout with slower beta2
