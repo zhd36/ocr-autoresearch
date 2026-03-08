@@ -305,3 +305,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the LR sweet spot has a real floor. Dropping to `4e-4` loses too much optimization speed, so the earlier gains were not from “lower is always better,” but from moving into a narrower optimum around `4.5e-4`.
 - Evidence: clear. This is meaningfully worse than the current best while keeping strong word accuracy.
 - Next action: stop pushing base LR downward and instead test the decay shape around the now-plausible optimum, starting with a lower final LR floor.
+
+### Round 46 - `02522af` - lower final lr floor
+
+- Result: `val_cer=0.677901`, `word_acc=0.133188`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `ee39e2e`: `+0.029437` CER worse
+- Keypoint: the improved backbone wants a lower base LR, but it does not want overly aggressive late annealing. The model still benefits from meaningful movement late in training.
+- Evidence: clear. Main-metric regression is too large to justify keeping the change.
+- Next action: test the opposite side of the schedule shape with a slightly higher final LR floor, to see whether the best point is a bit flatter than the current `0.1`.

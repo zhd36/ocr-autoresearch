@@ -44,3 +44,4 @@ bfd58c2	0.825085	0.067686	3.4	discard	zero-init residual branch norms
 924a75b	0.663396	0.124454	3.4	keep	lower lr on conditioned backbone
 ee39e2e	0.648464	0.135371	3.4	keep	lower lr bracket
 fd7ffef	0.673208	0.131004	3.4	discard	lower lr further
+02522af	0.677901	0.133188	3.4	discard	lower final lr floor
