@@ -5,18 +5,18 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 36
-- Next round index: 37
+- Current logged rounds: 73
+- Next round index: 74
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
 
 ## Current Best Result
 
-- Commit: `34fa0bd`
-- Description: `lower beta1 on conditioned backbone`
-- `val_cer`: `0.641638`
-- `word_acc`: `0.126638`
+- Commit: `5f1c9ca`
+- Description: `beta2 bracket above new best`
+- `val_cer`: `0.622014`
+- `word_acc`: `0.159389`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -521,3 +521,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: keeping a higher learning-rate floor does not compensate for the slower `beta2`; it mostly prevents the run from tightening late. The current best setup seems to benefit from very stable scaling early and genuinely small steps at the end.
 - Evidence: solid. The run stays healthy but clearly underperforms the best, with no sign of a late-stage payoff from the higher floor.
 - Next action: treat `FINAL_LR_FRAC=0.1` as still locked even under `beta2=0.998`. The next experiments should move away from global schedule tweaks and focus on another high-leverage part of the head or loss dynamics.
+
+### Round 73 - `e431149` - preserve width at layer2
+
+- Result: `val_cer=0.715017`, `word_acc=0.043668`, `memory_gb=2.6`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.093003` CER worse
+- Keypoint: higher temporal resolution is not free information in a 5-minute budget. Doubling the sequence length from 32 to 64 without changing recurrent width cuts the optimization budget far too hard, and the model never gets close to the baseline fitting regime.
+- Evidence: strong. `num_steps` drops from about `4190` to `2999`, and both CER and word accuracy collapse with it.
+- Next action: do not reject the resolution hypothesis yet; reject the unbalanced version of it. The next useful test is a compute-rebalanced variant, preserving width at `layer2` while shrinking the recurrent head so the longer sequence can be trained with closer-to-baseline step count.
