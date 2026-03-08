@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 35
-- Next round index: 36
+- Current logged rounds: 36
+- Next round index: 37
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -225,3 +225,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: once the encoder and stage-boundary conditioning are fixed, simply increasing recurrent width is strongly counterproductive. The model no longer appears capacity-limited in the recurrent stack; the extra width mostly makes the fixed 5-minute budget less efficient.
 - Evidence: very clear. CER degrades sharply with a noticeable parameter increase and no compensating accuracy gain.
 - Next action: test the opposite direction next. A slightly narrower recurrent head may better match the now-stronger encoder and recover efficiency without losing too much expressivity.
+
+### Round 36 - `22ad3e9` - narrower recurrent head
+
+- Result: `val_cer=0.794369`, `word_acc=0.050218`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.119028` CER worse
+- Keypoint: narrowing the recurrent head is also decisively bad. The current `256` hidden size is not an arbitrary default anymore; with the improved encoder and normalization stack, it is the balance point between enough temporal capacity and enough efficiency.
+- Evidence: decisive. Both wider and narrower recurrent heads fail badly, so this axis is now well bracketed.
+- Next action: stop spending rounds on recurrent capacity and continue along the stronger discovered theme: better early encoder feature selection and conditioning.
