@@ -313,3 +313,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the improved backbone wants a lower base LR, but it does not want overly aggressive late annealing. The model still benefits from meaningful movement late in training.
 - Evidence: clear. Main-metric regression is too large to justify keeping the change.
 - Next action: test the opposite side of the schedule shape with a slightly higher final LR floor, to see whether the best point is a bit flatter than the current `0.1`.
+
+### Round 47 - `9fb53d1` - higher final lr floor
+
+- Result: `val_cer=0.665956`, `word_acc=0.120087`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `ee39e2e`: `+0.017492` CER worse
+- Keypoint: the late-training floor is now bracketed. The current backbone wants `FINAL_LR_FRAC=0.1` closely enough that moving either direction hurts.
+- Evidence: clear. The regression is smaller than some failures but still too large to keep, and both sides of the floor sweep are now worse than the center.
+- Next action: leave the decay shape alone and test whether a small warmup helps the new lower-LR regime enter training more cleanly.
