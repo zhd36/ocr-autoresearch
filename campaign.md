@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 101
-- Next round index: 102
+- Current logged rounds: 102
+- Next round index: 103
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -753,3 +753,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the classifier-geometry line is not the right abstraction for this regime. Even the milder weight-normalized head hurts badly, which means the model needs a free linear classifier more than it needs explicit class-direction regularization; the useful calibration effect of high dropout is not equivalent to constraining classifier weights.
 - Evidence: decisive. CER regresses sharply and step count falls to `3412`, so this is both a representation mismatch and an efficiency penalty.
 - Next action: abandon classifier-geometry experiments. The next structural move should keep the free classifier and instead add a learned channel-selection gate on top of the normalized LSTM features, because dropout helped by suppressing channels rather than by constraining class vectors.
+
+### Round 102 - `8b34c89` - residual head gate on stable one-layer head
+
+- Result: `val_cer=0.666382`, `word_acc=0.128821`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.066979` CER worse
+- Keypoint: a learned deterministic channel gate does not recover the benefit of strong classifier-side dropout. Even when the gate is initialized as an identity-like residual modulation, the model does not discover a better channel-selection pattern than the plain normalized LSTM features plus dropout.
+- Evidence: strong. Step count stays reasonably close to baseline (`4047`), so the regression is mostly about representation quality rather than a severe compute tax.
+- Next action: stop adding new head modules for now. The next most justified move is to revisit the CTC blank-alignment interface on the stronger `1-layer, hidden=512` regime, because that was the last head-adjacent mechanism that showed any real signal before the architecture changed.
