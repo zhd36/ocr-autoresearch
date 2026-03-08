@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `d94fa70`
-- Description: `higher beta2 on conditioned backbone`
-- `val_cer`: `0.646758`
-- `word_acc`: `0.137555`
+- Commit: `34fa0bd`
+- Description: `lower beta1 on conditioned backbone`
+- `val_cer`: `0.641638`
+- `word_acc`: `0.126638`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -369,3 +369,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: once `beta2` is already smoothed to `0.995`, raising `beta1` to `0.95` makes the optimizer too inert for a 5-minute budget. The remaining issue is not lack of momentum; it is balancing responsiveness against noisy scaling.
 - Evidence: clear. The regression is meaningful and consistent with over-smoothing updates.
 - Next action: keep `beta2=0.995`, but test the opposite side with a lower `beta1` to see whether more responsive first-moment updates pair better with the smoother second-moment estimate.
+
+### Round 54 - `34fa0bd` - lower beta1 on conditioned backbone
+
+- Result: `val_cer=0.641638`, `word_acc=0.126638`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `d94fa70`: `-0.005120` CER better
+- Keypoint: the best optimizer shape on the new backbone is now clear: more responsive first-moment updates combined with smoother second-moment scaling. Lowering `beta1` to `0.85` helps the optimizer adapt faster without giving up the stabilizing effect of `beta2=0.995`.
+- Evidence: clear. CER improves meaningfully again, even though word accuracy gives back a little from the previous best.
+- Next action: continue the same bracket by testing whether `beta1` should go slightly lower still, starting with `0.8`.
