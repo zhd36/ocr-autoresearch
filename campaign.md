@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 80
-- Next round index: 81
+- Current logged rounds: 81
+- Next round index: 82
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -585,3 +585,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new one-layer `512` architecture still prefers the slower `beta2=0.998`. Its gradient statistics changed enough to justify re-checking, but not enough to move the optimum downward.
 - Evidence: solid. Step count and memory stay essentially identical to Round 77, so the regression reflects optimization quality rather than throughput drift.
 - Next action: lock `beta2=0.998` on the new architecture as well. The next rounds should search for the next structure move on top of `1-layer, hidden=512`, rather than reopening this optimizer axis.
+
+### Round 81 - `7d32529` - add RNN skip fusion
+
+- Result: `val_cer=0.669795`, `word_acc=0.128821`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.050768` CER worse
+- Keypoint: the new one-layer head does not want a direct residual shortcut from pre-RNN features into the classifier space. The wide LSTM is already producing a good integrated representation, and bypassing it appears to reintroduce local features in a way that hurts character calibration more than it helps detail retention.
+- Evidence: strong. Throughput stays similar, so the drop is about representation quality rather than a compute penalty.
+- Next action: abandon post-RNN skip fusion. A more coherent follow-up is to make the one-layer LSTM cheaper at its input instead of adding output-side fusion, because the previous projection experiment had some signal and the new best likely still has room to improve its capacity/budget balance.
