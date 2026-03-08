@@ -169,3 +169,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the conditioning story extends upstream. Normalizing the CNN sequence features before they enter the bidirectional LSTM gives a major boost, which implies the recurrent stack was previously spending capacity compensating for feature-scale variation from the encoder.
 - Evidence: extremely clear. This is a large, clean improvement on both CER and word accuracy with negligible overhead.
 - Next action: treat “careful feature conditioning across stage boundaries” as the main design principle for the next rounds. The next experiments should test whether both normalization points are needed and whether similar lightweight conditioning can simplify or further improve the model.
+
+### Round 29 - `d91dab7` - late-stage SE only
+
+- Result: `val_cer=0.824232`, `word_acc=0.024017`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `ae45646`: `+0.133106` CER worse
+- Keypoint: the SE gain is not concentrated only in late semantic blocks. Removing attention from the shallow stages destroys performance, which means early channel selection is part of the successful representation pipeline rather than optional overhead.
+- Evidence: decisive. The regression is massive even though training speed improves somewhat.
+- Next action: keep SE across the full encoder and explore a different normalization family inside the CNN stack, since conditioning remains the strongest positive theme but pruning early SE clearly breaks it.
