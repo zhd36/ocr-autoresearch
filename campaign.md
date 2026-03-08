@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 79
-- Next round index: 80
+- Current logged rounds: 80
+- Next round index: 81
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -577,3 +577,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the one-layer-wide curve has already turned downward above `512`. Extra capacity beyond this point costs enough training efficiency and/or over-sharpens the head that the net effect is negative.
 - Evidence: strong. Parameters rise to `18.5M`, step count falls to `4102`, and CER moves well away from the new best.
 - Next action: freeze `1-layer, hidden=512` as the best current recurrent geometry. Since this is a materially different architecture from the old two-layer best, the most justified next move is a very small optimizer re-check around the new structure rather than more width chasing.
+
+### Round 80 - `d44d8c7` - retune beta2 on new one-layer best
+
+- Result: `val_cer=0.632253`, `word_acc=0.150655`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.013226` CER worse
+- Keypoint: the new one-layer `512` architecture still prefers the slower `beta2=0.998`. Its gradient statistics changed enough to justify re-checking, but not enough to move the optimum downward.
+- Evidence: solid. Step count and memory stay essentially identical to Round 77, so the regression reflects optimization quality rather than throughput drift.
+- Next action: lock `beta2=0.998` on the new architecture as well. The next rounds should search for the next structure move on top of `1-layer, hidden=512`, rather than reopening this optimizer axis.

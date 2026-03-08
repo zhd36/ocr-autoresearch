@@ -77,3 +77,4 @@ ca7fcdf	0.643345	0.122271	3.4	discard	wider one-layer LSTM
 10b4225	0.619027	0.159389	3.4	keep	even wider one-layer LSTM
 b8968bd	0.632253	0.157205	3.4	discard	lower bracket for one-layer width
 f8966d3	0.645904	0.139738	3.4	discard	upper bracket for one-layer width
+d44d8c7	0.632253	0.150655	3.4	discard	retune beta2 on new one-layer best
