@@ -166,13 +166,11 @@ class CRNN(nn.Module):
             lstm_hidden=config.lstm_hidden,
             lstm_layers=config.lstm_layers,
         )
-        self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
         self.dropout = nn.Dropout(config.dropout)
         self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
 
     def forward(self, images):
         x = self.encoder(images)
-        x = self.sequence_norm(x)
         x = self.dropout(x)
         logits = self.classifier(x)
         return logits
