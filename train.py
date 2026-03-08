@@ -202,6 +202,7 @@ class CRNNConfig:
     num_dropout_samples: int = 1
     use_cosine_classifier: bool = False
     use_weight_norm_classifier: bool = False
+    use_head_gate: bool = False
     cosine_scale_init: float = 12.0
     dropout: float = 0.1
 
@@ -227,6 +228,17 @@ class CRNN(nn.Module):
         if config.aux_ctc_weight > 0.0:
             self.aux_classifier = nn.Linear(self.encoder.rnn_input_dim, num_classes)
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
+        self.head_gate = None
+        if config.use_head_gate:
+            gate_hidden = max(self.encoder.out_channels // 8, 64)
+            self.head_gate = nn.Sequential(
+                nn.Linear(self.encoder.out_channels, gate_hidden),
+                nn.ReLU(inplace=True),
+                nn.Linear(gate_hidden, self.encoder.out_channels),
+                nn.Sigmoid(),
+            )
+            nn.init.zeros_(self.head_gate[2].weight)
+            nn.init.zeros_(self.head_gate[2].bias)
         self.dropout = LockedDropout(config.dropout) if config.use_locked_dropout else nn.Dropout(config.dropout)
         self.classifier = None
         self.classifier_weight = None
@@ -264,6 +276,8 @@ class CRNN(nn.Module):
         if self.rnn_skip is not None:
             x = x + self.rnn_skip(sequence)
         x = self.sequence_norm(x)
+        if self.head_gate is not None:
+            x = x * (2.0 * self.head_gate(x))
         return sequence, x
 
     def forward_with_aux(self, images):
@@ -399,6 +413,7 @@ USE_LOCKED_DROPOUT = env_bool("USE_LOCKED_DROPOUT", False)
 NUM_DROPOUT_SAMPLES = env_int("NUM_DROPOUT_SAMPLES", 1)
 USE_COSINE_CLASSIFIER = env_bool("USE_COSINE_CLASSIFIER", False)
 USE_WEIGHT_NORM_CLASSIFIER = env_bool("USE_WEIGHT_NORM_CLASSIFIER", False)
+USE_HEAD_GATE = env_bool("USE_HEAD_GATE", False)
 COSINE_SCALE_INIT = env_float("COSINE_SCALE_INIT", 12.0)
 WIDTH_MASK = env_int("WIDTH_MASK", 0)
 WIDTH_MASK_PROB = env_float("WIDTH_MASK_PROB", 0.0)
@@ -443,6 +458,7 @@ config = CRNNConfig(
     num_dropout_samples=NUM_DROPOUT_SAMPLES,
     use_cosine_classifier=USE_COSINE_CLASSIFIER,
     use_weight_norm_classifier=USE_WEIGHT_NORM_CLASSIFIER,
+    use_head_gate=USE_HEAD_GATE,
     cosine_scale_init=COSINE_SCALE_INIT,
     dropout=DROPOUT,
 )
@@ -480,7 +496,7 @@ print(
     f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, "
     f"aux_ctc_weight={AUX_CTC_WEIGHT}, width_mask={WIDTH_MASK}, width_mask_prob={WIDTH_MASK_PROB}, "
     f"use_cosine_classifier={USE_COSINE_CLASSIFIER}, use_weight_norm_classifier={USE_WEIGHT_NORM_CLASSIFIER}, "
-    f"cosine_scale_init={COSINE_SCALE_INIT}"
+    f"use_head_gate={USE_HEAD_GATE}, cosine_scale_init={COSINE_SCALE_INIT}"
 )
 
 
