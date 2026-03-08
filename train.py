@@ -201,6 +201,7 @@ class CRNNConfig:
     use_locked_dropout: bool = False
     num_dropout_samples: int = 1
     use_cosine_classifier: bool = False
+    use_weight_norm_classifier: bool = False
     cosine_scale_init: float = 12.0
     dropout: float = 0.1
 
@@ -238,6 +239,8 @@ class CRNN(nn.Module):
             nn.init.normal_(self.classifier_weight, std=0.02)
         else:
             self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
+            if config.use_weight_norm_classifier:
+                self.classifier = nn.utils.parametrizations.weight_norm(self.classifier, name="weight")
 
     def project_logits(self, x):
         if self.classifier is not None:
@@ -395,6 +398,7 @@ AUX_CTC_WEIGHT = env_float("AUX_CTC_WEIGHT", 0.0)
 USE_LOCKED_DROPOUT = env_bool("USE_LOCKED_DROPOUT", False)
 NUM_DROPOUT_SAMPLES = env_int("NUM_DROPOUT_SAMPLES", 1)
 USE_COSINE_CLASSIFIER = env_bool("USE_COSINE_CLASSIFIER", False)
+USE_WEIGHT_NORM_CLASSIFIER = env_bool("USE_WEIGHT_NORM_CLASSIFIER", False)
 COSINE_SCALE_INIT = env_float("COSINE_SCALE_INIT", 12.0)
 WIDTH_MASK = env_int("WIDTH_MASK", 0)
 WIDTH_MASK_PROB = env_float("WIDTH_MASK_PROB", 0.0)
@@ -438,6 +442,7 @@ config = CRNNConfig(
     use_locked_dropout=USE_LOCKED_DROPOUT,
     num_dropout_samples=NUM_DROPOUT_SAMPLES,
     use_cosine_classifier=USE_COSINE_CLASSIFIER,
+    use_weight_norm_classifier=USE_WEIGHT_NORM_CLASSIFIER,
     cosine_scale_init=COSINE_SCALE_INIT,
     dropout=DROPOUT,
 )
@@ -474,7 +479,8 @@ print(
     f"betas={BETAS}, warmup_ratio={WARMUP_RATIO}, final_lr_frac={FINAL_LR_FRAC}, "
     f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, "
     f"aux_ctc_weight={AUX_CTC_WEIGHT}, width_mask={WIDTH_MASK}, width_mask_prob={WIDTH_MASK_PROB}, "
-    f"use_cosine_classifier={USE_COSINE_CLASSIFIER}, cosine_scale_init={COSINE_SCALE_INIT}"
+    f"use_cosine_classifier={USE_COSINE_CLASSIFIER}, use_weight_norm_classifier={USE_WEIGHT_NORM_CLASSIFIER}, "
+    f"cosine_scale_init={COSINE_SCALE_INIT}"
 )
 
 
