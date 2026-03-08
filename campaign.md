@@ -137,3 +137,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the gain from LayerNorm does not extend to adding extra local temporal mixing. The model likely already has enough sequence context from the bidirectional LSTM, and the added conv block introduces unnecessary transformation noise or optimization burden at the head.
 - Evidence: very clear. CER regresses heavily despite similar memory use, so this is not a marginal tradeoff.
 - Next action: keep LayerNorm as the new base, but stay closer to its apparent benefit by trying per-timestep channel refinement next instead of extra temporal mixing.
+
+### Round 25 - `818e0ed` - residual MLP head after LayerNorm
+
+- Result: `val_cer=0.765358`, `word_acc=0.074236`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `7192ce2`: `+0.032849` CER worse
+- Keypoint: a richer pointwise head again improves word-level exact matches while hurting CER, which suggests the added head capacity is helping confident easy predictions without improving fine-grained character alignment. The useful signal from LayerNorm is therefore conditioning, not “make the head deeper.”
+- Evidence: clear. CER worsens materially even though word accuracy reaches a new local high.
+- Next action: move the next structural change upstream into the encoder with lightweight channel attention, because head-side complexity is no longer matching the main metric.
