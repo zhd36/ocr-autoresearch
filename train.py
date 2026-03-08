@@ -100,6 +100,7 @@ class ResNetAsterEncoder(nn.Module):
         layer2_width_stride=2,
         rnn_input_dim=512,
         lstm_proj_size=0,
+        layer5_blocks=3,
     ):
         super().__init__()
         self.layer0 = nn.Sequential(
@@ -113,7 +114,7 @@ class ResNetAsterEncoder(nn.Module):
         self.layer2 = self._make_layer(64, 4, [2, layer2_width_stride])
         self.layer3 = self._make_layer(128, 6, [2, 1])
         self.layer4 = self._make_layer(256, 6, [2, 1])
-        self.layer5 = self._make_layer(512, 3, [2, 1])
+        self.layer5 = self._make_layer(512, layer5_blocks, [2, 1])
         self.pre_rnn_norm = nn.LayerNorm(512)
         self.rnn_input_dim = rnn_input_dim
         self.input_proj = None
@@ -180,6 +181,7 @@ class CRNNConfig:
     layer2_width_stride: int = 2
     rnn_input_dim: int = 512
     lstm_proj_size: int = 0
+    layer5_blocks: int = 3
     use_rnn_skip: bool = False
     aux_ctc_weight: float = 0.0
     dropout: float = 0.1
@@ -197,6 +199,7 @@ class CRNN(nn.Module):
             layer2_width_stride=config.layer2_width_stride,
             rnn_input_dim=config.rnn_input_dim,
             lstm_proj_size=config.lstm_proj_size,
+            layer5_blocks=config.layer5_blocks,
         )
         self.rnn_skip = None
         if config.use_rnn_skip:
@@ -326,6 +329,7 @@ LAYER1_WIDTH_STRIDE = env_int("LAYER1_WIDTH_STRIDE", 2)
 LAYER2_WIDTH_STRIDE = env_int("LAYER2_WIDTH_STRIDE", 2)
 RNN_INPUT_DIM = env_int("RNN_INPUT_DIM", 512)
 LSTM_PROJ_SIZE = env_int("LSTM_PROJ_SIZE", 0)
+LAYER5_BLOCKS = env_int("LAYER5_BLOCKS", 3)
 USE_RNN_SKIP = env_bool("USE_RNN_SKIP", False)
 AUX_CTC_WEIGHT = env_float("AUX_CTC_WEIGHT", 0.0)
 DROPOUT = env_float("DROPOUT", 0.1)
@@ -362,6 +366,7 @@ config = CRNNConfig(
     layer2_width_stride=LAYER2_WIDTH_STRIDE,
     rnn_input_dim=RNN_INPUT_DIM,
     lstm_proj_size=LSTM_PROJ_SIZE,
+    layer5_blocks=LAYER5_BLOCKS,
     use_rnn_skip=USE_RNN_SKIP,
     aux_ctc_weight=AUX_CTC_WEIGHT,
     dropout=DROPOUT,
