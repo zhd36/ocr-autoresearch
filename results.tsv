@@ -9,3 +9,4 @@ a4bfa5a	0.769625	0.037118	3.4	keep	total batch 32
 bd90ff4	0.786689	0.039301	3.4	discard	smaller lstm hidden
 a84f80a	0.754693	0.045852	3.4	keep	remove warmup
 42cc42d	0.785836	0.039301	3.4	discard	zero final lr
+b379ced	0.765785	0.052402	3.4	discard	enable amp
