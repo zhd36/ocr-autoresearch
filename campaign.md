@@ -497,3 +497,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: even in this short-budget regime, the classifier-side dropout is still doing useful stabilization work. Removing it makes the model fit more noisily rather than more effectively, so the current bottleneck is not excessive regularization.
 - Evidence: strong. CER regresses heavily and the run actually completes fewer steps, so there is no hidden throughput benefit offsetting the worse metric.
 - Next action: stop revisiting dropout. The more plausible remaining lever is now the CTC interface itself, especially whether a small blank-logit bias could improve early alignment dynamics without changing the benchmark or decoder.
+
+### Round 70 - `7792353` - negative blank bias for CTC
+
+- Result: `val_cer=0.632253`, `word_acc=0.146288`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.010239` CER worse
+- Keypoint: the CTC-interface hypothesis has real signal. A negative blank bias does help relative to many recent failed directions, which suggests that early blank dominance is part of the optimization story, but `-1.0` is too strong and starts to oversuppress the blank path that CTC still needs.
+- Evidence: moderate-to-strong. The run lands close to the top tier instead of collapsing, so unlike AMP or the handoff tweaks, this direction is not obviously wrong; it looks mis-tuned.
+- Next action: keep the blank-bias mechanism in the code and bracket a milder value next, such as `-0.5`, to see whether a softer push against blank dominance can capture the alignment benefit without overcorrecting.
