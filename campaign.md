@@ -353,3 +353,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: EMA is not helping this 5-minute regime. The likely reason is that the best gains are coming from relatively recent updates on a fast-improving trajectory, so averaging parameters backward dilutes useful late-stage specialization.
 - Evidence: clear. The regression is meaningful and the memory cost goes up slightly.
 - Next action: stop exploring heavy parameter smoothing and test a much lighter regularization change next, such as tiny weight decay, which may control overfitting without blurring the online solution.
+
+### Round 52 - `db9b06d` - tiny weight decay on conditioned backbone
+
+- Result: `val_cer=0.666809`, `word_acc=0.117904`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `d94fa70`: `+0.020051` CER worse
+- Keypoint: even extremely small weight decay is still a net negative in this regime. The current backbone and low-LR optimizer appear to benefit more from preserving fitting capacity than from additional parameter shrinkage.
+- Evidence: clear. The regression is too large to justify keeping the change.
+- Next action: keep `weight_decay=0` fixed and move future optimizer experiments toward first-moment behavior or other lightweight stabilization ideas rather than explicit regularization.
