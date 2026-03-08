@@ -393,3 +393,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: stronger gradient clipping is not the right way to control the remaining noise. It constrains useful updates more than it suppresses harmful spikes.
 - Evidence: clear. The regression is too large to justify keeping the change.
 - Next action: leave `GRAD_CLIP=5.0` alone. The next most likely useful move is to revisit batch-size noise control on the new backbone, because earlier batch conclusions were collected under much weaker models and optimizer settings.
+
+### Round 57 - `a9ee9eb` - larger batch on conditioned backbone
+
+- Result: `val_cer=0.750853`, `word_acc=0.100437`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `34fa0bd`: `+0.109215` CER worse
+- Keypoint: in the current regime, more parameter updates matter much more than lower gradient noise from larger batches. Even though sample throughput rises, losing optimizer steps is catastrophic.
+- Evidence: decisive. This is a large regression despite higher samples seen.
+- Next action: test the opposite side next. With the new optimizer settings, a somewhat smaller batch may finally be worthwhile because it buys more updates without the old instability.
