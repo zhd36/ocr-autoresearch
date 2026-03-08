@@ -79,3 +79,4 @@ b8968bd	0.632253	0.157205	3.4	discard	lower bracket for one-layer width
 f8966d3	0.645904	0.139738	3.4	discard	upper bracket for one-layer width
 d44d8c7	0.632253	0.150655	3.4	discard	retune beta2 on new one-layer best
 7d32529	0.669795	0.128821	3.4	discard	add RNN skip fusion
+a26b47a	0.818259	0.061135	3.4	discard	project into one-layer LSTM

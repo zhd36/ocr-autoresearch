@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 81
-- Next round index: 82
+- Current logged rounds: 82
+- Next round index: 83
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -593,3 +593,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new one-layer head does not want a direct residual shortcut from pre-RNN features into the classifier space. The wide LSTM is already producing a good integrated representation, and bypassing it appears to reintroduce local features in a way that hurts character calibration more than it helps detail retention.
 - Evidence: strong. Throughput stays similar, so the drop is about representation quality rather than a compute penalty.
 - Next action: abandon post-RNN skip fusion. A more coherent follow-up is to make the one-layer LSTM cheaper at its input instead of adding output-side fusion, because the previous projection experiment had some signal and the new best likely still has room to improve its capacity/budget balance.
+
+### Round 82 - `a26b47a` - project into one-layer LSTM
+
+- Result: `val_cer=0.818259`, `word_acc=0.061135`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.199232` CER worse
+- Keypoint: the one-layer `512` head is not bottlenecked by excessive input dimensionality. It needs the full 512-dimensional conditioned encoder sequence; compressing that interface before the LSTM destroys the representation even when step count stays unchanged.
+- Evidence: decisive. `num_steps` remains at `4214`, so the collapse is purely representational rather than an optimization-budget issue.
+- Next action: stop compressing the encoder-to-LSTM interface. The next stronger hypothesis is to keep the good `512` output width but increase internal recurrent state with LSTM projection, so capacity rises without repeating the failed “just widen the visible output” move.
