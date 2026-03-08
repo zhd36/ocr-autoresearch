@@ -91,7 +91,14 @@ class ResNetAsterEncoder(nn.Module):
     Adapted from OpenOCR's ResNet_ASTER encoder.
     """
 
-    def __init__(self, in_channels=3, lstm_hidden=256, lstm_layers=2):
+    def __init__(
+        self,
+        in_channels=3,
+        lstm_hidden=256,
+        lstm_layers=2,
+        layer1_width_stride=2,
+        layer2_width_stride=2,
+    ):
         super().__init__()
         self.layer0 = nn.Sequential(
             nn.Conv2d(in_channels, 32, kernel_size=3, stride=1, padding=1, bias=False),
@@ -100,8 +107,8 @@ class ResNetAsterEncoder(nn.Module):
         )
 
         self.inplanes = 32
-        self.layer1 = self._make_layer(32, 3, [2, 2])
-        self.layer2 = self._make_layer(64, 4, [2, 2])
+        self.layer1 = self._make_layer(32, 3, [2, layer1_width_stride])
+        self.layer2 = self._make_layer(64, 4, [2, layer2_width_stride])
         self.layer3 = self._make_layer(128, 6, [2, 1])
         self.layer4 = self._make_layer(256, 6, [2, 1])
         self.layer5 = self._make_layer(512, 3, [2, 1])
@@ -155,6 +162,8 @@ class CRNNConfig:
     in_channels: int = 3
     lstm_hidden: int = 256
     lstm_layers: int = 2
+    layer1_width_stride: int = 2
+    layer2_width_stride: int = 2
     dropout: float = 0.1
 
 
@@ -166,6 +175,8 @@ class CRNN(nn.Module):
             in_channels=config.in_channels,
             lstm_hidden=config.lstm_hidden,
             lstm_layers=config.lstm_layers,
+            layer1_width_stride=config.layer1_width_stride,
+            layer2_width_stride=config.layer2_width_stride,
         )
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
         self.dropout = nn.Dropout(config.dropout)
@@ -272,6 +283,8 @@ EMA_DECAY = env_float("EMA_DECAY", 0.0)
 # Model
 LSTM_HIDDEN = env_int("LSTM_HIDDEN", 256)
 LSTM_LAYERS = env_int("LSTM_LAYERS", 2)
+LAYER1_WIDTH_STRIDE = env_int("LAYER1_WIDTH_STRIDE", 2)
+LAYER2_WIDTH_STRIDE = env_int("LAYER2_WIDTH_STRIDE", 2)
 DROPOUT = env_float("DROPOUT", 0.1)
 
 # Misc
@@ -302,6 +315,8 @@ config = CRNNConfig(
     in_channels=3,
     lstm_hidden=LSTM_HIDDEN,
     lstm_layers=LSTM_LAYERS,
+    layer1_width_stride=LAYER1_WIDTH_STRIDE,
+    layer2_width_stride=LAYER2_WIDTH_STRIDE,
     dropout=DROPOUT,
 )
 
