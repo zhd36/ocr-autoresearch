@@ -185,3 +185,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: replacing `BatchNorm2d` with `GroupNorm` in the SE-equipped encoder gives another clear gain, which reinforces the idea that stable feature statistics matter more than batch-dependent normalization in this OCR setting.
 - Evidence: very clear. CER improves materially again with essentially unchanged model size and memory.
 - Next action: use this as the new base and test whether all downstream normalization points are still needed, starting with the post-LSTM/head LayerNorm.
+
+### Round 31 - `6f969d8` - remove post-LSTM LayerNorm
+
+- Result: `val_cer=0.812713`, `word_acc=0.030568`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.137372` CER worse
+- Keypoint: the post-LSTM/head LayerNorm is not redundant. Even with `GroupNorm` in the encoder and pre-RNN conditioning, the classifier still depends heavily on normalized recurrent outputs.
+- Evidence: decisive. Removing it causes a very large collapse in both CER and word accuracy.
+- Next action: restore the head LayerNorm and run the symmetric ablation on the pre-RNN LayerNorm to verify whether both normalization boundaries are essential.
