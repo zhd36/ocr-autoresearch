@@ -97,13 +97,6 @@ class ResNetAsterEncoder(nn.Module):
             norm2d(32),
             nn.ReLU(inplace=True),
         )
-        self.stem_se = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(32, 16, kernel_size=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(16, 32, kernel_size=1),
-            nn.Sigmoid(),
-        )
 
         self.inplanes = 32
         self.layer1 = self._make_layer(32, 3, [2, 2])
@@ -145,7 +138,6 @@ class ResNetAsterEncoder(nn.Module):
 
     def forward(self, x):
         x = self.layer0(x)
-        x = x * self.stem_se(x)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
