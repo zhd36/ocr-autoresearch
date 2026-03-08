@@ -257,3 +257,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: adding explicit mid-level feature fusion is less destructive than the stem changes, but it still underperforms the simpler top-stage-only representation. The current encoder seems to benefit more from clean conditioned features than from extra multi-scale mixing.
 - Evidence: clear enough. The regression is moderate rather than catastrophic, but still large enough to reject.
 - Next action: keep the encoder path simple and test learned feature alignment/compression before the recurrent stack, where there may still be wasted dimensionality under the 5-minute budget.
+
+### Round 40 - `9050c23` - pre-RNN projection bottleneck
+
+- Result: `val_cer=0.682167`, `word_acc=0.113537`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.006826` CER worse
+- Keypoint: this is the first recent miss that is close enough to be informative rather than simply bad. A learned projection before the recurrent stack seems to improve coarse word-level decisions, but compressing from `512` to `384` likely discards some fine character information, which shows up in CER.
+- Evidence: moderately clear. The main metric is still worse, so it is not a keep, but the small gap plus the stronger word accuracy suggests the pre-RNN alignment idea itself may be sound.
+- Next action: keep the idea but remove the hard compression. Test a residual pre-RNN adapter that preserves `512` dimensions while still giving the model a learned alignment stage before the LSTM.
