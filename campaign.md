@@ -4,9 +4,9 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Scope
 
-- Minimum total rounds: 36
-- Current logged rounds: 12
-- Next round index: 13
+- Minimum total rounds: 300
+- Current logged rounds: 35
+- Next round index: 36
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -217,3 +217,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the pre-RNN boundary also wants full `LayerNorm`, not RMS-only rescaling. The recurrent stack appears highly sensitive to centered sequence features, not just normalized magnitudes.
 - Evidence: decisive. This is a large regression and clearly worse than the existing conditioned base.
 - Next action: stop norm-form exploration and use the last two rounds on modest architecture-capacity tests on top of the now well-validated normalization/attention backbone.
+
+### Round 35 - `de87f00` - wider recurrent head
+
+- Result: `val_cer=0.773464`, `word_acc=0.048035`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.098123` CER worse
+- Keypoint: once the encoder and stage-boundary conditioning are fixed, simply increasing recurrent width is strongly counterproductive. The model no longer appears capacity-limited in the recurrent stack; the extra width mostly makes the fixed 5-minute budget less efficient.
+- Evidence: very clear. CER degrades sharply with a noticeable parameter increase and no compensating accuracy gain.
+- Next action: test the opposite direction next. A slightly narrower recurrent head may better match the now-stronger encoder and recover efficiency without losing too much expressivity.
