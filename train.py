@@ -273,6 +273,7 @@ EMA_DECAY = env_float("EMA_DECAY", 0.0)
 LSTM_HIDDEN = env_int("LSTM_HIDDEN", 256)
 LSTM_LAYERS = env_int("LSTM_LAYERS", 2)
 DROPOUT = env_float("DROPOUT", 0.1)
+BLANK_BIAS = env_float("BLANK_BIAS", 0.0)
 
 # Misc
 SEED = env_int("SEED", 1337)
@@ -309,6 +310,9 @@ assert TOTAL_BATCH_SIZE % DEVICE_BATCH_SIZE == 0
 grad_accum_steps = TOTAL_BATCH_SIZE // DEVICE_BATCH_SIZE
 
 model = CRNN(config, num_classes=codec.num_classes).to(device)
+if BLANK_BIAS != 0.0:
+    with torch.no_grad():
+        model.classifier.bias[0].fill_(BLANK_BIAS)
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, betas=BETAS, weight_decay=WEIGHT_DECAY)
 ema_model = None
 if EMA_DECAY > 0.0:
@@ -335,7 +339,7 @@ print(
     f"total_batch={TOTAL_BATCH_SIZE}, device_batch={DEVICE_BATCH_SIZE}, "
     f"eval_batch={EVAL_BATCH_SIZE}, lr={LR}, weight_decay={WEIGHT_DECAY}, "
     f"betas={BETAS}, warmup_ratio={WARMUP_RATIO}, final_lr_frac={FINAL_LR_FRAC}, "
-    f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}"
+    f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, blank_bias={BLANK_BIAS}"
 )
 
 
