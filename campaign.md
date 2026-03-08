@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 84
-- Next round index: 85
+- Current logged rounds: 85
+- Next round index: 86
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -617,3 +617,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: auxiliary supervision at the pre-RNN sequence is actively harmful here. Instead of accelerating useful alignment learning, it splits the optimization target across two representation levels that apparently want different invariances.
 - Evidence: decisive. Step count stays healthy, yet CER collapses badly, so this is not a simple budget issue.
 - Next action: stop pursuing deep supervision on this backbone. The next worthwhile test is to revisit a wider two-layer LSTM under the now-correct optimizer, because the older negative result on wider recurrent heads was measured in a materially different regime.
+
+### Round 85 - `d720459` - revisit wider two-layer LSTM
+
+- Result: `val_cer=0.686860`, `word_acc=0.131004`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.067833` CER worse
+- Keypoint: the new one-layer `512` result was not an optimizer artifact hiding a better deep recurrent model. Even under the correct optimizer, a wider two-layer LSTM spends too much budget for the quality it returns.
+- Evidence: strong. Parameters climb to `19.7M`, steps fall below `4000`, and CER regresses heavily.
+- Next action: freeze the recurrent side more confidently around `1-layer, hidden=512`. The next likely structural gain is now on the encoder budget side, especially testing whether the stronger head allows a slightly cheaper late encoder without sacrificing feature quality.
