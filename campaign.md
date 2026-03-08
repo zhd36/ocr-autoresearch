@@ -425,3 +425,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the previous optimizer search was materially under-smoothed for this backbone. The conditioned encoder is producing useful but still bursty gradients, and a much slower second-moment estimate is helping scale those updates cleanly while `beta1=0.85` preserves enough short-horizon responsiveness.
 - Evidence: very strong. Both CER and word accuracy improve sharply again, which means this is not a fragile metric trade; it is a broad optimization improvement.
 - Next action: keep pushing until the curve clearly turns. The immediate next test should be `beta2=0.999` with the same `beta1=0.85` to see whether the optimum has moved all the way to the upper edge or peaks just below it.
+
+### Round 61 - `bd7ee6c` - upper beta2 edge on new optimizer
+
+- Result: `val_cer=0.635239`, `word_acc=0.137555`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.013225` CER worse
+- Keypoint: the second-moment smoothing sweet spot is real and sharp. `beta2=0.999` crosses from useful stabilization into harmful inertia, so the optimizer stops adapting quickly enough late in the 5-minute window.
+- Evidence: strong. The regression is large enough that this is not just run noise, especially since word accuracy falls with it.
+- Next action: refine inside the narrow high-performing window instead of pushing the edge further. The best next measurement is a midpoint such as `beta2=0.9985` to check whether the optimum sits slightly above `0.998` or whether `0.998` is already the peak.

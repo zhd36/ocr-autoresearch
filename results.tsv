@@ -59,3 +59,4 @@ a9ee9eb	0.750853	0.100437	3.4	discard	larger batch on conditioned backbone
 252a617	0.661263	0.122271	3.4	discard	smaller batch on conditioned backbone
 76f9bbb	0.634812	0.144105	3.4	keep	higher beta2 with lower beta1
 5f1c9ca	0.622014	0.159389	3.4	keep	beta2 bracket above new best
+bd7ee6c	0.635239	0.137555	3.4	discard	upper beta2 edge on new optimizer
