@@ -203,6 +203,7 @@ class CRNNConfig:
     use_cosine_classifier: bool = False
     use_weight_norm_classifier: bool = False
     use_head_gate: bool = False
+    blank_logit_bias: float = 0.0
     cosine_scale_init: float = 12.0
     dropout: float = 0.1
 
@@ -253,6 +254,11 @@ class CRNN(nn.Module):
             self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
             if config.use_weight_norm_classifier:
                 self.classifier = nn.utils.parametrizations.weight_norm(self.classifier, name="weight")
+        if config.blank_logit_bias != 0.0:
+            target_bias = self.classifier.bias if self.classifier is not None else self.classifier_bias
+            if target_bias is not None:
+                with torch.no_grad():
+                    target_bias[0] = config.blank_logit_bias
 
     def project_logits(self, x):
         if self.classifier is not None:
@@ -414,6 +420,7 @@ NUM_DROPOUT_SAMPLES = env_int("NUM_DROPOUT_SAMPLES", 1)
 USE_COSINE_CLASSIFIER = env_bool("USE_COSINE_CLASSIFIER", False)
 USE_WEIGHT_NORM_CLASSIFIER = env_bool("USE_WEIGHT_NORM_CLASSIFIER", False)
 USE_HEAD_GATE = env_bool("USE_HEAD_GATE", False)
+BLANK_LOGIT_BIAS = env_float("BLANK_LOGIT_BIAS", 0.0)
 COSINE_SCALE_INIT = env_float("COSINE_SCALE_INIT", 12.0)
 WIDTH_MASK = env_int("WIDTH_MASK", 0)
 WIDTH_MASK_PROB = env_float("WIDTH_MASK_PROB", 0.0)
@@ -459,6 +466,7 @@ config = CRNNConfig(
     use_cosine_classifier=USE_COSINE_CLASSIFIER,
     use_weight_norm_classifier=USE_WEIGHT_NORM_CLASSIFIER,
     use_head_gate=USE_HEAD_GATE,
+    blank_logit_bias=BLANK_LOGIT_BIAS,
     cosine_scale_init=COSINE_SCALE_INIT,
     dropout=DROPOUT,
 )
@@ -496,7 +504,7 @@ print(
     f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, "
     f"aux_ctc_weight={AUX_CTC_WEIGHT}, width_mask={WIDTH_MASK}, width_mask_prob={WIDTH_MASK_PROB}, "
     f"use_cosine_classifier={USE_COSINE_CLASSIFIER}, use_weight_norm_classifier={USE_WEIGHT_NORM_CLASSIFIER}, "
-    f"use_head_gate={USE_HEAD_GATE}, cosine_scale_init={COSINE_SCALE_INIT}"
+    f"use_head_gate={USE_HEAD_GATE}, blank_logit_bias={BLANK_LOGIT_BIAS}, cosine_scale_init={COSINE_SCALE_INIT}"
 )
 
 
