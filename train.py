@@ -265,6 +265,23 @@ def ctc_loss(logits, flat_targets, target_lengths):
     )
 
 
+def apply_width_mask(images, mask_width, mask_prob):
+    if mask_width <= 0 or mask_prob <= 0.0:
+        return images
+    batch, _, _, width = images.shape
+    if mask_width >= width:
+        return images
+    apply_mask = torch.rand(batch, device=images.device) < mask_prob
+    if not apply_mask.any():
+        return images
+    starts = torch.randint(0, width - mask_width + 1, (batch,), device=images.device)
+    masked = images.clone()
+    for idx in torch.nonzero(apply_mask, as_tuple=False).flatten():
+        start = int(starts[idx].item())
+        masked[idx, :, :, start : start + mask_width] = 0.0
+    return masked
+
+
 def count_parameters(model):
     return sum(param.numel() for param in model.parameters())
 
@@ -348,6 +365,8 @@ LAYER5_BLOCKS = env_int("LAYER5_BLOCKS", 3)
 USE_RNN_SKIP = env_bool("USE_RNN_SKIP", False)
 AUX_CTC_WEIGHT = env_float("AUX_CTC_WEIGHT", 0.0)
 USE_LOCKED_DROPOUT = env_bool("USE_LOCKED_DROPOUT", False)
+WIDTH_MASK = env_int("WIDTH_MASK", 0)
+WIDTH_MASK_PROB = env_float("WIDTH_MASK_PROB", 0.0)
 DROPOUT = env_float("DROPOUT", 0.1)
 
 # Misc
@@ -419,7 +438,8 @@ print(
     f"total_batch={TOTAL_BATCH_SIZE}, device_batch={DEVICE_BATCH_SIZE}, "
     f"eval_batch={EVAL_BATCH_SIZE}, lr={LR}, weight_decay={WEIGHT_DECAY}, "
     f"betas={BETAS}, warmup_ratio={WARMUP_RATIO}, final_lr_frac={FINAL_LR_FRAC}, "
-    f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, aux_ctc_weight={AUX_CTC_WEIGHT}"
+    f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, "
+    f"aux_ctc_weight={AUX_CTC_WEIGHT}, width_mask={WIDTH_MASK}, width_mask_prob={WIDTH_MASK_PROB}"
 )
 
 
@@ -450,6 +470,7 @@ while True:
         images = images.to(device, non_blocking=True)
         flat_targets = flat_targets.to(device, non_blocking=True)
         target_lengths = target_lengths.to(device, non_blocking=True)
+        images = apply_width_mask(images, WIDTH_MASK, WIDTH_MASK_PROB)
 
         with autocast_ctx:
             if AUX_CTC_WEIGHT > 0.0:
