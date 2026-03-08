@@ -89,3 +89,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: increasing LR to `7e-4` also misses the best, so the current `6e-4` is not simply too conservative. The LR bracket now looks well centered: both lower and higher settings regress by a similar amount.
 - Evidence: clear. With both sides of the bracket worse, the search should move on instead of spending more rounds on nearby scalar LR tweaks.
 - Next action: pivot to dropout-strength tuning, because regularization via classifier dropout is cheaper and more targeted than weight decay and was not yet mapped around the current best regime.
+
+### Round 19 - `d00bb29` - lighter dropout
+
+- Result: `val_cer=0.779437`, `word_acc=0.039301`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.024744` CER worse
+- Keypoint: reducing dropout from `0.1` to `0.05` sharply hurts CER, which suggests the current head is not over-regularized. In this setup, that dropout is likely doing real work against overconfident CTC decoding rather than merely slowing fitting.
+- Evidence: very clear. The regression is large enough to rule out this side of the dropout search.
+- Next action: test `dropout=0.15` to see whether the best region is centered around `0.1` or whether slightly stronger dropout can improve robustness without repeating the weight-decay failure mode.
