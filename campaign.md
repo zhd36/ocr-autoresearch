@@ -529,3 +529,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: higher temporal resolution is not free information in a 5-minute budget. Doubling the sequence length from 32 to 64 without changing recurrent width cuts the optimization budget far too hard, and the model never gets close to the baseline fitting regime.
 - Evidence: strong. `num_steps` drops from about `4190` to `2999`, and both CER and word accuracy collapse with it.
 - Next action: do not reject the resolution hypothesis yet; reject the unbalanced version of it. The next useful test is a compute-rebalanced variant, preserving width at `layer2` while shrinking the recurrent head so the longer sequence can be trained with closer-to-baseline step count.
+
+### Round 74 - `95cfc68` - preserve width with smaller recurrent head
+
+- Result: `val_cer=0.814420`, `word_acc=0.032751`, `memory_gb=2.6`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.192406` CER worse
+- Keypoint: the failure mode of the 64-step model is not just raw compute. Even after shrinking the recurrent width, the longer sequence remains much harder to optimize in this budget, and the weaker recurrent head compounds the problem instead of balancing it.
+- Evidence: decisive. `num_steps` falls further to `2677`, loss stays extremely high, and recognition quality nearly collapses.
+- Next action: stop prioritizing longer encoder sequences for now. The next higher-value structure test is the opposite efficiency move: simplify the recurrent stack itself and see whether the saved budget can be converted into better fitting on the proven 32-step backbone.

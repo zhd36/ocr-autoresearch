@@ -71,3 +71,4 @@ e3ebdda	0.692406	0.120087	3.4	discard	remove dropout on optimizer peak
 7938f4e	0.655290	0.148472	3.4	discard	milder negative blank bias
 dbe505d	0.650171	0.137555	3.4	discard	higher lr floor with slow beta2
 e431149	0.715017	0.043668	2.6	discard	preserve width at layer2
+95cfc68	0.814420	0.032751	2.6	discard	preserve width with smaller recurrent head
