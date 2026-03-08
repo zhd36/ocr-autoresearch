@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `ae45646`
-- Description: `pre-RNN LayerNorm on encoder sequence`
-- `val_cer`: `0.691126`
-- `word_acc`: `0.120087`
+- Commit: `fe69bc3`
+- Description: `GroupNorm encoder blocks`
+- `val_cer`: `0.675341`
+- `word_acc`: `0.104803`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -177,3 +177,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the SE gain is not concentrated only in late semantic blocks. Removing attention from the shallow stages destroys performance, which means early channel selection is part of the successful representation pipeline rather than optional overhead.
 - Evidence: decisive. The regression is massive even though training speed improves somewhat.
 - Next action: keep SE across the full encoder and explore a different normalization family inside the CNN stack, since conditioning remains the strongest positive theme but pruning early SE clearly breaks it.
+
+### Round 30 - `fe69bc3` - GroupNorm encoder blocks
+
+- Result: `val_cer=0.675341`, `word_acc=0.104803`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `ae45646`: `-0.015785` CER better
+- Keypoint: replacing `BatchNorm2d` with `GroupNorm` in the SE-equipped encoder gives another clear gain, which reinforces the idea that stable feature statistics matter more than batch-dependent normalization in this OCR setting.
+- Evidence: very clear. CER improves materially again with essentially unchanged model size and memory.
+- Next action: use this as the new base and test whether all downstream normalization points are still needed, starting with the post-LSTM/head LayerNorm.

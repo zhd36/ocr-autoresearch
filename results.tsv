@@ -28,3 +28,4 @@ cbf0971	0.713737	0.087336	3.4	keep	add SE channel attention to Aster blocks
 ee25656	0.766212	0.067686	3.4	discard	SiLU activations in encoder
 ae45646	0.691126	0.120087	3.4	keep	pre-RNN LayerNorm on encoder sequence
 d91dab7	0.824232	0.024017	3.4	discard	late-stage SE only
+fe69bc3	0.675341	0.104803	3.4	keep	GroupNorm encoder blocks
