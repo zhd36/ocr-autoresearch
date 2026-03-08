@@ -233,3 +233,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: narrowing the recurrent head is also decisively bad. The current `256` hidden size is not an arbitrary default anymore; with the improved encoder and normalization stack, it is the balance point between enough temporal capacity and enough efficiency.
 - Evidence: decisive. Both wider and narrower recurrent heads fail badly, so this axis is now well bracketed.
 - Next action: stop spending rounds on recurrent capacity and continue along the stronger discovered theme: better early encoder feature selection and conditioning.
+
+### Round 37 - `29acbe3` - add SE gate to stem
+
+- Result: `val_cer=0.773464`, `word_acc=0.054585`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.098123` CER worse
+- Keypoint: the success of early encoder attention does not mean “put SE everywhere as early as possible.” A single hard gate on the stem output is harmful; the useful behavior seems to come from progressive channel reweighting inside residual feature extraction blocks.
+- Evidence: clear. CER regresses heavily with only a tiny parameter change.
+- Next action: keep the early-encoder focus, but change the form of the intervention. The next experiment should strengthen stem feature extraction itself rather than gating it.
