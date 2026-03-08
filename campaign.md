@@ -473,3 +473,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the model does not seem to be missing absolute position information at the CNN-to-sequence handoff. The recurrent stack already captures the needed order bias, and injecting a learned fixed positional signal likely interferes with the translation tolerance that scene-text crops still need.
 - Evidence: strong. The regression is large and comes without any compensating benefit in memory or word accuracy.
 - Next action: stop spending rounds on small handoff embellishments. The stronger inference now is that the current representation is basically good, and the remaining leverage may come from training-efficiency gains within the 5-minute budget, especially options that increase effective steps without changing the task, such as AMP.
+
+### Round 67 - `73483ab` - enable amp on optimizer peak
+
+- Result: `val_cer=0.793515`, `word_acc=0.054585`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.171501` CER worse
+- Keypoint: plain `fp16` AMP is not a free speed win here; it is numerically harmful for this CTC training loop. The run gets almost no throughput benefit, while the optimization quality collapses badly.
+- Evidence: decisive. `num_steps` and `samples_seen` are essentially unchanged from the fp32 best, but loss stays very high and both CER and word accuracy collapse.
+- Next action: stop treating generic AMP as a likely improvement. If mixed precision is worth revisiting at all, it should be with `bfloat16` rather than `float16`; otherwise the more promising path is to search elsewhere.
