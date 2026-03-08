@@ -193,3 +193,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the post-LSTM/head LayerNorm is not redundant. Even with `GroupNorm` in the encoder and pre-RNN conditioning, the classifier still depends heavily on normalized recurrent outputs.
 - Evidence: decisive. Removing it causes a very large collapse in both CER and word accuracy.
 - Next action: restore the head LayerNorm and run the symmetric ablation on the pre-RNN LayerNorm to verify whether both normalization boundaries are essential.
+
+### Round 32 - `ef646c4` - remove pre-RNN LayerNorm
+
+- Result: `val_cer=0.704352`, `word_acc=0.098253`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.029011` CER worse
+- Keypoint: the pre-RNN LayerNorm also contributes meaningfully, but its role is secondary to the head LayerNorm. Removing it hurts, though not nearly as catastrophically as removing the post-LSTM normalization.
+- Evidence: clear. The regression is large enough to keep the module, and the contrast with Round 31 gives a useful ranking of importance between the two normalization points.
+- Next action: keep both normalization points in the base model and spend the final rounds testing whether alternative norm forms or modest capacity changes can improve on this conditioned backbone.
