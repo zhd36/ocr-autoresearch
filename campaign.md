@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `924a75b`
-- Description: `lower lr on conditioned backbone`
-- `val_cer`: `0.663396`
-- `word_acc`: `0.124454`
+- Commit: `ee39e2e`
+- Description: `lower lr bracket`
+- `val_cer`: `0.648464`
+- `word_acc`: `0.135371`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -289,3 +289,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the stronger conditioned backbone changes the optimizer regime. Once SE, GroupNorm, and the two LayerNorm boundaries are in place, the old `6e-4` learning rate becomes too aggressive, and `5e-4` yields a clear gain in both CER and word accuracy.
 - Evidence: very clear. This is a meaningful main-metric improvement plus the strongest word accuracy seen so far.
 - Next action: stop treating optimization settings as settled. The next round should bracket around `5e-4` on the new backbone rather than jumping back to unrelated structural ideas.
+
+### Round 44 - `ee39e2e` - lower lr bracket
+
+- Result: `val_cer=0.648464`, `word_acc=0.135371`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `924a75b`: `-0.014932` CER better
+- Keypoint: the new backbone still prefers even gentler updates. Lowering LR again to `4.5e-4` gives another substantial jump, so the critical insight now is that architectural conditioning shifted the whole optimization sweet spot downward.
+- Evidence: extremely clear. CER and word accuracy both improve strongly again.
+- Next action: continue a tight optimizer bracket around this region, starting with `4e-4`, before resuming broader structural exploration.
