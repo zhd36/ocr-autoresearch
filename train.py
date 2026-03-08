@@ -89,7 +89,7 @@ class ResNetAsterEncoder(nn.Module):
         self.layer4 = self._make_layer(256, 6, [2, 1])
         self.layer5 = self._make_layer(512, 3, [2, 1])
 
-        self.rnn = nn.LSTM(
+        self.rnn = nn.GRU(
             input_size=512,
             hidden_size=lstm_hidden,
             num_layers=lstm_layers,
