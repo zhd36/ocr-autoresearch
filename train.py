@@ -253,11 +253,6 @@ def env_float_tuple(name, default):
     return tuple(float(part) for part in parts)
 
 
-def env_str(name, default):
-    value = os.getenv(f"OCR_AR_{name}")
-    return value if value is not None else default
-
-
 # ---------------------------------------------------------------------------
 # Hyperparameters (edit these directly)
 # ---------------------------------------------------------------------------
@@ -282,7 +277,6 @@ DROPOUT = env_float("DROPOUT", 0.1)
 # Misc
 SEED = env_int("SEED", 1337)
 USE_AMP = env_bool("USE_AMP", False)
-AMP_DTYPE = env_str("AMP_DTYPE", "float16").lower()
 
 
 # ---------------------------------------------------------------------------
@@ -302,13 +296,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if device.type == "cuda":
     torch.cuda.manual_seed(SEED)
     torch.cuda.reset_peak_memory_stats()
-
-if AMP_DTYPE == "float16":
-    autocast_dtype = torch.float16
-elif AMP_DTYPE == "bfloat16":
-    autocast_dtype = torch.bfloat16
-else:
-    raise ValueError(f"Unsupported AMP_DTYPE: {AMP_DTYPE}")
 
 codec = OCRCodec.from_file(CODEC_PATH)
 config = CRNNConfig(
@@ -332,7 +319,7 @@ num_params = count_parameters(model)
 
 train_loader = make_dataloader(codec, DEVICE_BATCH_SIZE, "train", infinite=True)
 autocast_ctx = (
-    torch.autocast(device_type="cuda", dtype=autocast_dtype)
+    torch.autocast(device_type="cuda", dtype=torch.float16)
     if USE_AMP and device.type == "cuda"
     else nullcontext()
 )
@@ -341,7 +328,6 @@ scaler = torch.amp.GradScaler("cuda", enabled=True) if USE_AMP and device.type =
 print(f"Device: {device}")
 print(f"Model config: {asdict(config)}")
 print(f"Parameters: {num_params:,}")
-print(f"AMP config: use_amp={USE_AMP}, amp_dtype={AMP_DTYPE}")
 print(f"Time budget: {TIME_BUDGET}s")
 print(f"Gradient accumulation steps: {grad_accum_steps}")
 print(
