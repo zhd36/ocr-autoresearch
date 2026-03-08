@@ -91,7 +91,7 @@ class ResNetAsterEncoder(nn.Module):
     Adapted from OpenOCR's ResNet_ASTER encoder.
     """
 
-    def __init__(self, in_channels=3, lstm_hidden=256, lstm_layers=2):
+    def __init__(self, in_channels=3, lstm_hidden=256, lstm_layers=2, pre_rnn_mix_kernel=0):
         super().__init__()
         self.layer0 = nn.Sequential(
             nn.Conv2d(in_channels, 32, kernel_size=3, stride=1, padding=1, bias=False),
@@ -105,6 +105,14 @@ class ResNetAsterEncoder(nn.Module):
         self.layer3 = self._make_layer(128, 6, [2, 1])
         self.layer4 = self._make_layer(256, 6, [2, 1])
         self.layer5 = self._make_layer(512, 3, [2, 1])
+        self.pre_rnn_mix = None
+        if pre_rnn_mix_kernel > 1:
+            padding = pre_rnn_mix_kernel // 2
+            self.pre_rnn_mix = nn.Sequential(
+                nn.Conv1d(512, 512, kernel_size=pre_rnn_mix_kernel, padding=padding, groups=512, bias=False),
+                nn.ReLU(inplace=True),
+                nn.Conv1d(512, 512, kernel_size=1, bias=False),
+            )
         self.pre_rnn_norm = nn.LayerNorm(512)
 
         self.rnn = nn.LSTM(
@@ -118,7 +126,7 @@ class ResNetAsterEncoder(nn.Module):
         self.out_channels = 2 * lstm_hidden
 
         for module in self.modules():
-            if isinstance(module, nn.Conv2d):
+            if isinstance(module, (nn.Conv1d, nn.Conv2d)):
                 nn.init.kaiming_normal_(module.weight, mode="fan_out", nonlinearity="relu")
             elif isinstance(module, (nn.BatchNorm2d, nn.GroupNorm)):
                 nn.init.constant_(module.weight, 1)
@@ -145,6 +153,9 @@ class ResNetAsterEncoder(nn.Module):
         x = self.layer4(x)
         x = self.layer5(x)
         x = x.squeeze(2).transpose(1, 2).contiguous()
+        if self.pre_rnn_mix is not None:
+            mixed = self.pre_rnn_mix(x.transpose(1, 2)).transpose(1, 2).contiguous()
+            x = x + mixed
         x = self.pre_rnn_norm(x)
         x, _ = self.rnn(x)
         return x
@@ -155,6 +166,7 @@ class CRNNConfig:
     in_channels: int = 3
     lstm_hidden: int = 256
     lstm_layers: int = 2
+    pre_rnn_mix_kernel: int = 0
     dropout: float = 0.1
 
 
@@ -166,6 +178,7 @@ class CRNN(nn.Module):
             in_channels=config.in_channels,
             lstm_hidden=config.lstm_hidden,
             lstm_layers=config.lstm_layers,
+            pre_rnn_mix_kernel=config.pre_rnn_mix_kernel,
         )
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
         self.dropout = nn.Dropout(config.dropout)
@@ -272,6 +285,7 @@ EMA_DECAY = env_float("EMA_DECAY", 0.0)
 # Model
 LSTM_HIDDEN = env_int("LSTM_HIDDEN", 256)
 LSTM_LAYERS = env_int("LSTM_LAYERS", 2)
+PRE_RNN_MIX_KERNEL = env_int("PRE_RNN_MIX_KERNEL", 0)
 DROPOUT = env_float("DROPOUT", 0.1)
 
 # Misc
@@ -302,6 +316,7 @@ config = CRNNConfig(
     in_channels=3,
     lstm_hidden=LSTM_HIDDEN,
     lstm_layers=LSTM_LAYERS,
+    pre_rnn_mix_kernel=PRE_RNN_MIX_KERNEL,
     dropout=DROPOUT,
 )
 
