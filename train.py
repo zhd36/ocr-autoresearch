@@ -46,14 +46,21 @@ def conv1x1(in_planes, out_planes, stride=1):
     )
 
 
+def norm2d(channels):
+    groups = min(8, channels)
+    while channels % groups != 0:
+        groups -= 1
+    return nn.GroupNorm(groups, channels)
+
+
 class AsterBlock(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super().__init__()
         self.conv1 = conv1x1(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes)
+        self.bn1 = norm2d(planes)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes)
+        self.bn2 = norm2d(planes)
         squeeze_channels = max(planes // 8, 16)
         self.se = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
@@ -87,7 +94,7 @@ class ResNetAsterEncoder(nn.Module):
         super().__init__()
         self.layer0 = nn.Sequential(
             nn.Conv2d(in_channels, 32, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(32),
+            norm2d(32),
             nn.ReLU(inplace=True),
         )
 
@@ -112,7 +119,7 @@ class ResNetAsterEncoder(nn.Module):
         for module in self.modules():
             if isinstance(module, nn.Conv2d):
                 nn.init.kaiming_normal_(module.weight, mode="fan_out", nonlinearity="relu")
-            elif isinstance(module, nn.BatchNorm2d):
+            elif isinstance(module, (nn.BatchNorm2d, nn.GroupNorm)):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
 
@@ -121,7 +128,7 @@ class ResNetAsterEncoder(nn.Module):
         if stride != [1, 1] or self.inplanes != planes:
             downsample = nn.Sequential(
                 conv1x1(self.inplanes, planes, stride),
-                nn.BatchNorm2d(planes),
+                norm2d(planes),
             )
         layers = [AsterBlock(self.inplanes, planes, stride, downsample)]
         self.inplanes = planes
