@@ -5,18 +5,18 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 86
-- Next round index: 87
+- Current logged rounds: 87
+- Next round index: 88
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
 
 ## Current Best Result
 
-- Commit: `10b4225`
-- Description: `even wider one-layer LSTM`
-- `val_cer`: `0.619027`
-- `word_acc`: `0.159389`
+- Commit: `c6ab25c`
+- Description: `stronger dropout on one-layer best`
+- `val_cer`: `0.618601`
+- `word_acc`: `0.146288`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -633,3 +633,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the last encoder stage is not redundant even with the stronger one-layer `512` head. The saved compute does buy many more steps, but the missing high-level visual refinement is far more damaging than the extra optimization budget is helpful.
 - Evidence: decisive. `num_steps` jumps to `4402`, yet CER collapses badly, which cleanly separates feature-quality loss from optimization-speed gain.
 - Next action: stop trimming proven encoder depth. The most justified next move is now a narrow retune on the new best head itself, especially classifier-side dropout, because the visible recurrent width has doubled and may have shifted the best regularization point.
+
+### Round 87 - `c6ab25c` - stronger dropout on one-layer best
+
+- Result: `val_cer=0.618601`, `word_acc=0.146288`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `10b4225`: `-0.000426` CER better
+- Keypoint: the new one-layer `512` head does want slightly stronger classifier-side regularization. Once the visible recurrent representation doubled in width, the old `dropout=0.1` setting became a bit too weak, and `0.15` recovers a small but real CER gain.
+- Evidence: moderate but credible. Throughput and memory are essentially unchanged, so this improvement is coming from better calibration rather than luck through altered training budget.
+- Next action: keep the new base and bracket one step upward with `dropout=0.2` to see whether the regularization optimum moved broadly upward or whether `0.15` is already near the peak.

@@ -84,3 +84,4 @@ a26b47a	0.818259	0.061135	3.4	discard	project into one-layer LSTM
 22e9a8e	0.776451	0.098253	3.4	discard	add auxiliary CTC supervision
 d720459	0.686860	0.131004	3.4	discard	revisit wider two-layer LSTM
 502dfb3	0.736775	0.117904	3.4	discard	lighten final encoder stage
+c6ab25c	0.618601	0.146288	3.4	keep	stronger dropout on one-layer best
