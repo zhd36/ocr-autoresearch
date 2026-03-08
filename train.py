@@ -199,6 +199,7 @@ class CRNNConfig:
     use_rnn_skip: bool = False
     aux_ctc_weight: float = 0.0
     use_locked_dropout: bool = False
+    num_dropout_samples: int = 1
     dropout: float = 0.1
 
 
@@ -226,24 +227,31 @@ class CRNN(nn.Module):
         self.dropout = LockedDropout(config.dropout) if config.use_locked_dropout else nn.Dropout(config.dropout)
         self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
 
+    def classify(self, x):
+        if self.training and self.config.num_dropout_samples > 1:
+            logits = 0.0
+            for _ in range(self.config.num_dropout_samples):
+                logits = logits + self.classifier(self.dropout(x))
+            return logits / self.config.num_dropout_samples
+        return self.classifier(self.dropout(x))
+
     def forward_features(self, images):
         sequence = self.encoder.encode_sequence(images)
         x, _ = self.encoder.rnn(sequence)
         if self.rnn_skip is not None:
             x = x + self.rnn_skip(sequence)
         x = self.sequence_norm(x)
-        x = self.dropout(x)
         return sequence, x
 
     def forward_with_aux(self, images):
         sequence, x = self.forward_features(images)
-        logits = self.classifier(x)
+        logits = self.classify(x)
         aux_logits = self.aux_classifier(sequence) if self.aux_classifier is not None else None
         return logits, aux_logits
 
     def forward(self, images):
         _, x = self.forward_features(images)
-        logits = self.classifier(x)
+        logits = self.classify(x)
         return logits
 
 
@@ -365,6 +373,7 @@ LAYER5_BLOCKS = env_int("LAYER5_BLOCKS", 3)
 USE_RNN_SKIP = env_bool("USE_RNN_SKIP", False)
 AUX_CTC_WEIGHT = env_float("AUX_CTC_WEIGHT", 0.0)
 USE_LOCKED_DROPOUT = env_bool("USE_LOCKED_DROPOUT", False)
+NUM_DROPOUT_SAMPLES = env_int("NUM_DROPOUT_SAMPLES", 1)
 WIDTH_MASK = env_int("WIDTH_MASK", 0)
 WIDTH_MASK_PROB = env_float("WIDTH_MASK_PROB", 0.0)
 DROPOUT = env_float("DROPOUT", 0.1)
@@ -405,6 +414,7 @@ config = CRNNConfig(
     use_rnn_skip=USE_RNN_SKIP,
     aux_ctc_weight=AUX_CTC_WEIGHT,
     use_locked_dropout=USE_LOCKED_DROPOUT,
+    num_dropout_samples=NUM_DROPOUT_SAMPLES,
     dropout=DROPOUT,
 )
 
