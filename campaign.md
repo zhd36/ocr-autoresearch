@@ -321,3 +321,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the late-training floor is now bracketed. The current backbone wants `FINAL_LR_FRAC=0.1` closely enough that moving either direction hurts.
 - Evidence: clear. The regression is smaller than some failures but still too large to keep, and both sides of the floor sweep are now worse than the center.
 - Next action: leave the decay shape alone and test whether a small warmup helps the new lower-LR regime enter training more cleanly.
+
+### Round 48 - `4a7ad3c` - small warmup on conditioned backbone
+
+- Result: `val_cer=0.747440`, `word_acc=0.091703`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `ee39e2e`: `+0.098976` CER worse
+- Keypoint: even on the new, lower-LR regime, warmup is still decisively harmful. This backbone wants to start learning immediately rather than spending the early budget ramping up.
+- Evidence: decisive. The regression is far too large to treat as a minor schedule mismatch.
+- Next action: keep `WARMUP_RATIO=0` fixed going forward. Future optimizer work should focus on momentum/regularization interactions around the new best LR, not on slower starts.
