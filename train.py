@@ -105,11 +105,9 @@ class ResNetAsterEncoder(nn.Module):
         self.layer4 = self._make_layer(256, 6, [2, 1])
         self.layer5 = self._make_layer(512, 3, [2, 1])
         self.pre_rnn_norm = nn.LayerNorm(512)
-        self.pre_rnn_proj = nn.Linear(512, 384)
-        self.pre_rnn_proj_norm = nn.LayerNorm(384)
 
         self.rnn = nn.LSTM(
-            input_size=384,
+            input_size=512,
             hidden_size=lstm_hidden,
             num_layers=lstm_layers,
             bidirectional=True,
@@ -147,7 +145,6 @@ class ResNetAsterEncoder(nn.Module):
         x = self.layer5(x)
         x = x.squeeze(2).transpose(1, 2).contiguous()
         x = self.pre_rnn_norm(x)
-        x = self.pre_rnn_proj_norm(self.pre_rnn_proj(x))
         x, _ = self.rnn(x)
         return x
 
