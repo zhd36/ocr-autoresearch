@@ -189,29 +189,61 @@ def get_lr(progress):
     return LR * (FINAL_LR_FRAC + (1.0 - FINAL_LR_FRAC) * cosine)
 
 
+def env_int(name, default):
+    value = os.getenv(f"OCR_AR_{name}")
+    return int(value) if value is not None else default
+
+
+def env_float(name, default):
+    value = os.getenv(f"OCR_AR_{name}")
+    return float(value) if value is not None else default
+
+
+def env_bool(name, default):
+    value = os.getenv(f"OCR_AR_{name}")
+    if value is None:
+        return default
+    value = value.strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"Invalid boolean override for {name}: {value!r}")
+
+
+def env_float_tuple(name, default):
+    value = os.getenv(f"OCR_AR_{name}")
+    if value is None:
+        return default
+    parts = [part.strip() for part in value.split(",")]
+    if len(parts) != len(default):
+        raise ValueError(f"Invalid tuple override for {name}: {value!r}")
+    return tuple(float(part) for part in parts)
+
+
 # ---------------------------------------------------------------------------
 # Hyperparameters (edit these directly)
 # ---------------------------------------------------------------------------
 
 # Optimization
-TOTAL_BATCH_SIZE = 32
-DEVICE_BATCH_SIZE = 32
-EVAL_BATCH_SIZE = 128
-LR = 6e-4
-WEIGHT_DECAY = 0.0
-BETAS = (0.9, 0.99)
-WARMUP_RATIO = 0.0
-FINAL_LR_FRAC = 0.1
-GRAD_CLIP = 5.0
+TOTAL_BATCH_SIZE = env_int("TOTAL_BATCH_SIZE", 32)
+DEVICE_BATCH_SIZE = env_int("DEVICE_BATCH_SIZE", 32)
+EVAL_BATCH_SIZE = env_int("EVAL_BATCH_SIZE", 128)
+LR = env_float("LR", 6e-4)
+WEIGHT_DECAY = env_float("WEIGHT_DECAY", 0.0)
+BETAS = env_float_tuple("BETAS", (0.9, 0.99))
+WARMUP_RATIO = env_float("WARMUP_RATIO", 0.0)
+FINAL_LR_FRAC = env_float("FINAL_LR_FRAC", 0.1)
+GRAD_CLIP = env_float("GRAD_CLIP", 5.0)
 
 # Model
-LSTM_HIDDEN = 256
-LSTM_LAYERS = 2
-DROPOUT = 0.1
+LSTM_HIDDEN = env_int("LSTM_HIDDEN", 256)
+LSTM_LAYERS = env_int("LSTM_LAYERS", 2)
+DROPOUT = env_float("DROPOUT", 0.1)
 
 # Misc
-SEED = 1337
-USE_AMP = False
+SEED = env_int("SEED", 1337)
+USE_AMP = env_bool("USE_AMP", False)
 
 
 # ---------------------------------------------------------------------------
@@ -260,6 +292,13 @@ print(f"Model config: {asdict(config)}")
 print(f"Parameters: {num_params:,}")
 print(f"Time budget: {TIME_BUDGET}s")
 print(f"Gradient accumulation steps: {grad_accum_steps}")
+print(
+    "Optimization config: "
+    f"total_batch={TOTAL_BATCH_SIZE}, device_batch={DEVICE_BATCH_SIZE}, "
+    f"eval_batch={EVAL_BATCH_SIZE}, lr={LR}, weight_decay={WEIGHT_DECAY}, "
+    f"betas={BETAS}, warmup_ratio={WARMUP_RATIO}, final_lr_frac={FINAL_LR_FRAC}, "
+    f"grad_clip={GRAD_CLIP}, use_amp={USE_AMP}"
+)
 
 
 # ---------------------------------------------------------------------------
