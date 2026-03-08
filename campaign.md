@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 78
-- Next round index: 79
+- Current logged rounds: 79
+- Next round index: 80
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -569,3 +569,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the one-layer solution is genuinely width-hungry. Dropping from `512` to `448` gives back too much sequence capacity, even though throughput stays strong.
 - Evidence: solid. Step count remains high (`4263`) and word accuracy stays competitive, but CER clearly regresses.
 - Next action: the next informative bracket is upward, not downward. Test a slightly larger one-layer hidden size above `512` to see whether the new best is still on the rising part of the curve or already at the top.
+
+### Round 79 - `f8966d3` - upper bracket for one-layer width
+
+- Result: `val_cer=0.645904`, `word_acc=0.139738`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.026877` CER worse
+- Keypoint: the one-layer-wide curve has already turned downward above `512`. Extra capacity beyond this point costs enough training efficiency and/or over-sharpens the head that the net effect is negative.
+- Evidence: strong. Parameters rise to `18.5M`, step count falls to `4102`, and CER moves well away from the new best.
+- Next action: freeze `1-layer, hidden=512` as the best current recurrent geometry. Since this is a materially different architecture from the old two-layer best, the most justified next move is a very small optimizer re-check around the new structure rather than more width chasing.
