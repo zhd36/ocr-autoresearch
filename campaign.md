@@ -5,18 +5,18 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 87
-- Next round index: 88
+- Current logged rounds: 88
+- Next round index: 89
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
 
 ## Current Best Result
 
-- Commit: `c6ab25c`
-- Description: `stronger dropout on one-layer best`
-- `val_cer`: `0.618601`
-- `word_acc`: `0.146288`
+- Commit: `4e81844`
+- Description: `upper dropout bracket on one-layer best`
+- `val_cer`: `0.599829`
+- `word_acc`: `0.176856`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -641,3 +641,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new one-layer `512` head does want slightly stronger classifier-side regularization. Once the visible recurrent representation doubled in width, the old `dropout=0.1` setting became a bit too weak, and `0.15` recovers a small but real CER gain.
 - Evidence: moderate but credible. Throughput and memory are essentially unchanged, so this improvement is coming from better calibration rather than luck through altered training budget.
 - Next action: keep the new base and bracket one step upward with `dropout=0.2` to see whether the regularization optimum moved broadly upward or whether `0.15` is already near the peak.
+
+### Round 88 - `4e81844` - upper dropout bracket on one-layer best
+
+- Result: `val_cer=0.599829`, `word_acc=0.176856`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `c6ab25c`: `-0.018772` CER better
+- Keypoint: the dropout shift was not a minor cleanup; it was a major missing calibration. The one-layer `512` head is substantially more expressive than the old baseline, and it needs much stronger classifier-side noise injection to prevent overconfident CTC fitting under the fixed 5-minute budget.
+- Evidence: very strong. CER improves sharply and word accuracy jumps with it, while throughput and memory remain effectively unchanged.
+- Next action: stay on this line immediately. The next best experiment is another upward bracket, starting with `dropout=0.25`, to determine whether the optimum has moved broadly upward or whether `0.2` is already close to the peak.
