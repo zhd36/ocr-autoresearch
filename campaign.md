@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `cbf0971`
-- Description: `add SE channel attention to Aster blocks`
-- `val_cer`: `0.713737`
-- `word_acc`: `0.087336`
+- Commit: `ae45646`
+- Description: `pre-RNN LayerNorm on encoder sequence`
+- `val_cer`: `0.691126`
+- `word_acc`: `0.120087`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -161,3 +161,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: smoother activations did not complement the new SE-equipped encoder; they degraded the proven feature pipeline substantially. The useful encoder improvement appears to be selective channel emphasis, not a broad nonlinearity swap.
 - Evidence: very clear. CER regresses heavily with no compensating gain elsewhere.
 - Next action: revert to ReLU and stay focused on feature conditioning, testing another normalization point before the recurrent stack rather than changing the encoder's whole activation regime.
+
+### Round 28 - `ae45646` - pre-RNN LayerNorm on encoder sequence
+
+- Result: `val_cer=0.691126`, `word_acc=0.120087`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `cbf0971`: `-0.022611` CER better
+- Keypoint: the conditioning story extends upstream. Normalizing the CNN sequence features before they enter the bidirectional LSTM gives a major boost, which implies the recurrent stack was previously spending capacity compensating for feature-scale variation from the encoder.
+- Evidence: extremely clear. This is a large, clean improvement on both CER and word accuracy with negligible overhead.
+- Next action: treat “careful feature conditioning across stage boundaries” as the main design principle for the next rounds. The next experiments should test whether both normalization points are needed and whether similar lightweight conditioning can simplify or further improve the model.

@@ -26,3 +26,4 @@ e930dc0	0.781143	0.037118	3.4	discard	shorter beta2
 818e0ed	0.765358	0.074236	3.4	discard	residual MLP head after LayerNorm
 cbf0971	0.713737	0.087336	3.4	keep	add SE channel attention to Aster blocks
 ee25656	0.766212	0.067686	3.4	discard	SiLU activations in encoder
+ae45646	0.691126	0.120087	3.4	keep	pre-RNN LayerNorm on encoder sequence
