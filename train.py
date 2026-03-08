@@ -144,7 +144,7 @@ class ResNetAsterEncoder(nn.Module):
             layers.append(AsterBlock(self.inplanes, planes))
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def encode_sequence(self, x):
         x = self.layer0(x)
         x = self.layer1(x)
         x = self.layer2(x)
@@ -153,6 +153,10 @@ class ResNetAsterEncoder(nn.Module):
         x = self.layer5(x)
         x = x.squeeze(2).transpose(1, 2).contiguous()
         x = self.pre_rnn_norm(x)
+        return x
+
+    def forward(self, x):
+        x = self.encode_sequence(x)
         x, _ = self.rnn(x)
         return x
 
@@ -164,6 +168,7 @@ class CRNNConfig:
     lstm_layers: int = 2
     layer1_width_stride: int = 2
     layer2_width_stride: int = 2
+    use_rnn_skip: bool = False
     dropout: float = 0.1
 
 
@@ -178,12 +183,18 @@ class CRNN(nn.Module):
             layer1_width_stride=config.layer1_width_stride,
             layer2_width_stride=config.layer2_width_stride,
         )
+        self.rnn_skip = None
+        if config.use_rnn_skip:
+            self.rnn_skip = nn.Linear(512, self.encoder.out_channels)
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
         self.dropout = nn.Dropout(config.dropout)
         self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
 
     def forward(self, images):
-        x = self.encoder(images)
+        sequence = self.encoder.encode_sequence(images)
+        x, _ = self.encoder.rnn(sequence)
+        if self.rnn_skip is not None:
+            x = x + self.rnn_skip(sequence)
         x = self.sequence_norm(x)
         x = self.dropout(x)
         logits = self.classifier(x)
@@ -285,6 +296,7 @@ LSTM_HIDDEN = env_int("LSTM_HIDDEN", 256)
 LSTM_LAYERS = env_int("LSTM_LAYERS", 2)
 LAYER1_WIDTH_STRIDE = env_int("LAYER1_WIDTH_STRIDE", 2)
 LAYER2_WIDTH_STRIDE = env_int("LAYER2_WIDTH_STRIDE", 2)
+USE_RNN_SKIP = env_bool("USE_RNN_SKIP", False)
 DROPOUT = env_float("DROPOUT", 0.1)
 
 # Misc
@@ -317,6 +329,7 @@ config = CRNNConfig(
     lstm_layers=LSTM_LAYERS,
     layer1_width_stride=LAYER1_WIDTH_STRIDE,
     layer2_width_stride=LAYER2_WIDTH_STRIDE,
+    use_rnn_skip=USE_RNN_SKIP,
     dropout=DROPOUT,
 )
 
