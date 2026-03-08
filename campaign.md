@@ -265,3 +265,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: this is the first recent miss that is close enough to be informative rather than simply bad. A learned projection before the recurrent stack seems to improve coarse word-level decisions, but compressing from `512` to `384` likely discards some fine character information, which shows up in CER.
 - Evidence: moderately clear. The main metric is still worse, so it is not a keep, but the small gap plus the stronger word accuracy suggests the pre-RNN alignment idea itself may be sound.
 - Next action: keep the idea but remove the hard compression. Test a residual pre-RNN adapter that preserves `512` dimensions while still giving the model a learned alignment stage before the LSTM.
+
+### Round 41 - `a3f35e9` - residual pre-RNN adapter
+
+- Result: `val_cer=0.692833`, `word_acc=0.080786`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.017492` CER worse
+- Keypoint: the problem in Round 40 was not only the bottleneck width. Adding a learned adapter before the LSTM, even without reducing the final dimensionality, still hurts. That means the current pre-RNN normalization is already providing the useful alignment signal, and extra transform depth there is mostly wasted under the time budget.
+- Evidence: clear. The adapter is materially worse than the best run and worse than the simpler bottleneck variant on the main metric.
+- Next action: stop spending rounds on pre-RNN adapters and instead test optimization-friendly residual-block initialization, where the current deep conditioned encoder may still gain convergence speed within 5 minutes.

@@ -39,3 +39,4 @@ de87f00	0.773464	0.048035	3.4	discard	wider recurrent head
 088183d	0.755546	0.078603	3.4	discard	deeper two-conv stem
 a43c457	0.703925	0.087336	3.4	discard	fuse layer4 features into layer5
 9050c23	0.682167	0.113537	3.4	discard	pre-RNN projection bottleneck
+a3f35e9	0.692833	0.080786	3.4	discard	residual pre-RNN adapter
