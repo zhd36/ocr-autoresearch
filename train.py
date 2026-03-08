@@ -51,7 +51,7 @@ class AsterBlock(nn.Module):
         super().__init__()
         self.conv1 = conv1x1(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.SiLU(inplace=True)
+        self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
         squeeze_channels = max(planes // 8, 16)
@@ -88,7 +88,7 @@ class ResNetAsterEncoder(nn.Module):
         self.layer0 = nn.Sequential(
             nn.Conv2d(in_channels, 32, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(32),
-            nn.SiLU(inplace=True),
+            nn.ReLU(inplace=True),
         )
 
         self.inplanes = 32
