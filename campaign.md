@@ -385,3 +385,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: reducing `beta1` further to `0.8` makes updates too reactive. It improves word-level decisiveness, but that extra aggressiveness hurts fine-grained character accuracy.
 - Evidence: clear. The direction changes behavior in a consistent way, but not in the direction we want for CER.
 - Next action: keep `beta1=0.85` as the center and try controlling update spikes with stronger gradient clipping instead of pushing momentum lower.
+
+### Round 56 - `2bfc6e3` - tighter grad clip on conditioned backbone
+
+- Result: `val_cer=0.673635`, `word_acc=0.128821`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `34fa0bd`: `+0.031997` CER worse
+- Keypoint: stronger gradient clipping is not the right way to control the remaining noise. It constrains useful updates more than it suppresses harmful spikes.
+- Evidence: clear. The regression is too large to justify keeping the change.
+- Next action: leave `GRAD_CLIP=5.0` alone. The next most likely useful move is to revisit batch-size noise control on the new backbone, because earlier batch conclusions were collected under much weaker models and optimizer settings.
