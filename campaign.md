@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 73
-- Next round index: 74
+- Current logged rounds: 76
+- Next round index: 77
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -545,3 +545,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the second recurrent layer is buying more than it costs. A one-layer bidirectional LSTM does train faster and sees more samples, but the lost sequence-modeling depth hurts character accuracy more than the extra optimization steps help.
 - Evidence: strong. `num_steps` rises to `4404`, yet CER still regresses heavily, so the gap is not a throughput problem.
 - Next action: do not abandon the depth-vs-efficiency trade yet. The next meaningful test is a wider one-layer LSTM, using the saved compute to recover expressive capacity without going back to two recurrent layers.
+
+### Round 76 - `ca7fcdf` - wider one-layer LSTM
+
+- Result: `val_cer=0.643345`, `word_acc=0.122271`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.021331` CER worse
+- Keypoint: the one-layer path has real signal once capacity is restored. Most of the Round 75 failure came from insufficient recurrent capacity rather than from shallowness alone, but a single wider layer still does not quite match the accuracy of the current two-layer best.
+- Evidence: strong. CER recovers dramatically relative to Round 75 while still keeping high step count (`4331`) and modest parameter count (`16.2M`).
+- Next action: keep this line alive for one more bracket step. The best next test is a slightly wider one-layer LSTM, such as `hidden=448` or `512`, to see whether it can fully convert the saved recurrent depth into enough single-layer capacity to challenge the current best.
