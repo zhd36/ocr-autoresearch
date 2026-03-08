@@ -57,3 +57,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: moving from 32 to 24 recovers much of the loss seen at 16, but still does not beat the current best. This suggests the main batch-size gain was already captured by getting down to 32, and further reduction now trades away more stability than it returns in useful extra updates.
 - Evidence: clear enough to stop spending more rounds on smaller-batch search. The result sits between 16 and 32 exactly as expected and does not indicate a hidden win below 32.
 - Next action: pivot away from batch size and test mild regularization at the current best geometry, starting with a small `weight_decay`, because that changes generalization pressure without undoing the proven 32-batch regime.
+
+### Round 15 - `3de4fdb` - mild weight decay
+
+- Result: `val_cer=0.765358`, `word_acc=0.056769`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.010665` CER worse
+- Keypoint: adding `weight_decay=1e-4` improved exact-match word accuracy but hurt character error. The most likely explanation is that this amount of regularization nudges predictions toward cleaner all-or-nothing strings on easier samples while reducing fine-grained character fitting under the tight 5-minute budget.
+- Evidence: moderately clear. The CER regression is too large to keep, but the word-accuracy gain suggests the regularization direction itself may still be viable at a weaker setting.
+- Next action: try a smaller `weight_decay=5e-5` to see whether the word-level gain can be retained without paying as much CER cost.
