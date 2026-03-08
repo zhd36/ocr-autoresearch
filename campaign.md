@@ -505,3 +505,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the CTC-interface hypothesis has real signal. A negative blank bias does help relative to many recent failed directions, which suggests that early blank dominance is part of the optimization story, but `-1.0` is too strong and starts to oversuppress the blank path that CTC still needs.
 - Evidence: moderate-to-strong. The run lands close to the top tier instead of collapsing, so unlike AMP or the handoff tweaks, this direction is not obviously wrong; it looks mis-tuned.
 - Next action: keep the blank-bias mechanism in the code and bracket a milder value next, such as `-0.5`, to see whether a softer push against blank dominance can capture the alignment benefit without overcorrecting.
+
+### Round 71 - `7938f4e` - milder negative blank bias
+
+- Result: `val_cer=0.655290`, `word_acc=0.148472`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.033276` CER worse
+- Keypoint: the blank-bias direction is not peaking between `0` and `-1.0`; the milder bias is worse, which suggests the whole mechanism is at best a secondary effect and not a path to the next meaningful CER drop.
+- Evidence: solid. It remains much healthier than the clearly bad directions, but it is still distinctly worse than both the best run and even the stronger `-1.0` variant.
+- Next action: stop prioritizing blank-bias bracketing. The next search should return to optimizer-schedule interactions that may have shifted under `beta2=0.998`, or another lightweight head-side modification with a stronger theoretical case.

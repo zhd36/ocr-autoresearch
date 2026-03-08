@@ -68,3 +68,4 @@ c9e02f4	0.647611	0.161572	3.4	discard	midpoint beta2 refinement
 c2aec4b	0.750000	0.076419	3.4	discard	enable bf16 amp
 e3ebdda	0.692406	0.120087	3.4	discard	remove dropout on optimizer peak
 7792353	0.632253	0.146288	3.4	discard	negative blank bias for CTC
+7938f4e	0.655290	0.148472	3.4	discard	milder negative blank bias
