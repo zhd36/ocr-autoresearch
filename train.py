@@ -54,14 +54,17 @@ class AsterBlock(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
-        squeeze_channels = max(planes // 8, 16)
-        self.se = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(planes, squeeze_channels, kernel_size=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(squeeze_channels, planes, kernel_size=1),
-            nn.Sigmoid(),
-        )
+        if planes >= 128:
+            squeeze_channels = max(planes // 8, 16)
+            self.se = nn.Sequential(
+                nn.AdaptiveAvgPool2d(1),
+                nn.Conv2d(planes, squeeze_channels, kernel_size=1),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(squeeze_channels, planes, kernel_size=1),
+                nn.Sigmoid(),
+            )
+        else:
+            self.se = nn.Identity()
         self.downsample = downsample
 
     def forward(self, x):
