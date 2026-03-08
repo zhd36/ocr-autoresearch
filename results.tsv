@@ -89,3 +89,4 @@ c6ab25c	0.618601	0.146288	3.4	keep	stronger dropout on one-layer best
 763771d	0.599403	0.155022	3.4	keep	higher dropout after big gain
 6b91f9a	0.627133	0.150655	3.4	discard	upper edge of new dropout regime
 abf2518	0.633959	0.141921	3.4	discard	midpoint refinement in new dropout peak
+f36e094	0.640785	0.124454	3.4	discard	reproducibility check for new best
