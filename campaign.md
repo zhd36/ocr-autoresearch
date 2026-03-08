@@ -689,3 +689,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: `dropout=0.2` is materially more stable than `0.25`, but it still does not consistently reproduce the very best lucky run. This points to a real high-dropout benefit combined with a still-noisy optimization regime, rather than pure measurement noise or pure scalar overfitting.
 - Evidence: solid. The rerun stays near the stronger region instead of collapsing, but it remains clearly behind the single best result.
 - Next action: test a stabilization move rather than another plain rerun. The most justified next experiment is `dropout=0.25` with a slightly lower learning rate, to see whether the strong-but-brittle high-dropout regime can be made reproducible.
+
+### Round 94 - `60c00b0` - stabilize high dropout with lower lr
+
+- Result: `val_cer=0.668515`, `word_acc=0.115721`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.069112` CER worse
+- Keypoint: the high-dropout instability is not caused by a nominal learning rate that is slightly too large. Lowering LR simply undercuts fitting while preserving the same unstable character of the regime.
+- Evidence: strong. Compute stays similar, but recognition quality drops sharply.
+- Next action: move away from step-size stabilization and test moment-based stabilization instead. The most plausible next experiment is a slightly slower second-moment estimate on the high-dropout configuration.
