@@ -104,6 +104,12 @@ class ResNetAsterEncoder(nn.Module):
         self.layer3 = self._make_layer(128, 6, [2, 1])
         self.layer4 = self._make_layer(256, 6, [2, 1])
         self.layer5 = self._make_layer(512, 3, [2, 1])
+        self.layer4_fuse = nn.Sequential(
+            nn.AvgPool2d(kernel_size=(2, 1), stride=(2, 1)),
+            conv1x1(256, 512),
+            norm2d(512),
+        )
+        self.fuse_act = nn.ReLU(inplace=True)
         self.pre_rnn_norm = nn.LayerNorm(512)
 
         self.rnn = nn.LSTM(
@@ -142,7 +148,7 @@ class ResNetAsterEncoder(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.layer5(x)
+        x = self.fuse_act(self.layer5(x) + self.layer4_fuse(x))
         x = x.squeeze(2).transpose(1, 2).contiguous()
         x = self.pre_rnn_norm(x)
         x, _ = self.rnn(x)
