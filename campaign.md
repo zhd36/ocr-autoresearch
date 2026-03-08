@@ -39,3 +39,13 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
    - the next action and why it follows from the observed keypoint
 6. Keep or discard the idea based on `val_cer`, with simplicity preferred when gains are close.
 7. Push the branch after every 4 newly completed rounds.
+
+## Round Log
+
+### Round 13 - `74d31dd` - total batch 16
+
+- Result: `val_cer=0.770904`, `word_acc=0.024017`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.016211` CER worse
+- Keypoint: the earlier gains from reducing total batch did not continue monotonically. Dropping from 32 to 16 doubled optimizer-step count within 5 minutes, but the higher update noise and lower total sample exposure did not improve recognition quality.
+- Evidence: fairly clear. CER worsened materially and word accuracy also dropped, so this is not just metric noise.
+- Next action: test `total batch 24` to map whether the useful regime ends near 32 or whether there is still a smaller-batch sweet spot between 16 and 32.

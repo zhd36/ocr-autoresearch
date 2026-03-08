@@ -11,3 +11,4 @@ a84f80a	0.754693	0.045852	3.4	keep	remove warmup
 42cc42d	0.785836	0.039301	3.4	discard	zero final lr
 b379ced	0.765785	0.052402	3.4	discard	enable amp
 38b5a7b	0.790956	0.041485	3.4	discard	higher final lr floor
+74d31dd	0.770904	0.024017	3.4	discard	total batch 16
