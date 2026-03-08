@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 85
-- Next round index: 86
+- Current logged rounds: 86
+- Next round index: 87
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -625,3 +625,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new one-layer `512` result was not an optimizer artifact hiding a better deep recurrent model. Even under the correct optimizer, a wider two-layer LSTM spends too much budget for the quality it returns.
 - Evidence: strong. Parameters climb to `19.7M`, steps fall below `4000`, and CER regresses heavily.
 - Next action: freeze the recurrent side more confidently around `1-layer, hidden=512`. The next likely structural gain is now on the encoder budget side, especially testing whether the stronger head allows a slightly cheaper late encoder without sacrificing feature quality.
+
+### Round 86 - `502dfb3` - lighten final encoder stage
+
+- Result: `val_cer=0.736775`, `word_acc=0.117904`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.117748` CER worse
+- Keypoint: the last encoder stage is not redundant even with the stronger one-layer `512` head. The saved compute does buy many more steps, but the missing high-level visual refinement is far more damaging than the extra optimization budget is helpful.
+- Evidence: decisive. `num_steps` jumps to `4402`, yet CER collapses badly, which cleanly separates feature-quality loss from optimization-speed gain.
+- Next action: stop trimming proven encoder depth. The most justified next move is now a narrow retune on the new best head itself, especially classifier-side dropout, because the visible recurrent width has doubled and may have shifted the best regularization point.
