@@ -249,3 +249,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: strengthening the stem is less harmful than gating it, but still clearly inferior to the current base. The current early pipeline is already good enough once the downstream SE, GroupNorm, and dual LayerNorm structure is in place.
 - Evidence: clear. This remains well short of the best run despite only a modest parameter increase.
 - Next action: keep the stem simple and refocus future experiments on more targeted mid/late encoder conditioning rather than broad early-front-end changes.
+
+### Round 39 - `a43c457` - fuse layer4 features into layer5
+
+- Result: `val_cer=0.703925`, `word_acc=0.087336`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.028584` CER worse
+- Keypoint: adding explicit mid-level feature fusion is less destructive than the stem changes, but it still underperforms the simpler top-stage-only representation. The current encoder seems to benefit more from clean conditioned features than from extra multi-scale mixing.
+- Evidence: clear enough. The regression is moderate rather than catastrophic, but still large enough to reject.
+- Next action: keep the encoder path simple and test learned feature alignment/compression before the recurrent stack, where there may still be wasted dimensionality under the 5-minute budget.

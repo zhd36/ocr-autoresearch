@@ -37,3 +37,4 @@ de87f00	0.773464	0.048035	3.4	discard	wider recurrent head
 22ad3e9	0.794369	0.050218	3.4	discard	narrower recurrent head
 29acbe3	0.773464	0.054585	3.4	discard	add SE gate to stem
 088183d	0.755546	0.078603	3.4	discard	deeper two-conv stem
+a43c457	0.703925	0.087336	3.4	discard	fuse layer4 features into layer5
