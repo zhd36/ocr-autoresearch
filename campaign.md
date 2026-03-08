@@ -5,18 +5,18 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 88
-- Next round index: 89
+- Current logged rounds: 89
+- Next round index: 90
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
 
 ## Current Best Result
 
-- Commit: `4e81844`
-- Description: `upper dropout bracket on one-layer best`
-- `val_cer`: `0.599829`
-- `word_acc`: `0.176856`
+- Commit: `763771d`
+- Description: `higher dropout after big gain`
+- `val_cer`: `0.599403`
+- `word_acc`: `0.155022`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -649,3 +649,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the dropout shift was not a minor cleanup; it was a major missing calibration. The one-layer `512` head is substantially more expressive than the old baseline, and it needs much stronger classifier-side noise injection to prevent overconfident CTC fitting under the fixed 5-minute budget.
 - Evidence: very strong. CER improves sharply and word accuracy jumps with it, while throughput and memory remain effectively unchanged.
 - Next action: stay on this line immediately. The next best experiment is another upward bracket, starting with `dropout=0.25`, to determine whether the optimum has moved broadly upward or whether `0.2` is already close to the peak.
+
+### Round 89 - `763771d` - higher dropout after big gain
+
+- Result: `val_cer=0.599403`, `word_acc=0.155022`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `4e81844`: `-0.000426` CER better
+- Keypoint: the strong-dropout regime still has a little headroom above `0.2`, but the gain has become much smaller. This suggests the curve is flattening and we are approaching the new regularization peak rather than still climbing rapidly.
+- Evidence: moderate. CER improves again with nearly identical compute, though word accuracy gives back some of the large gain from Round 88.
+- Next action: take one more upward step to `dropout=0.3`. That should tell us whether the optimum continues upward or whether the curve has already started to turn.
