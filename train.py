@@ -96,6 +96,9 @@ class ResNetAsterEncoder(nn.Module):
             nn.Conv2d(in_channels, 32, kernel_size=3, stride=1, padding=1, bias=False),
             norm2d(32),
             nn.ReLU(inplace=True),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1, bias=False),
+            norm2d(32),
+            nn.ReLU(inplace=True),
         )
 
         self.inplanes = 32
