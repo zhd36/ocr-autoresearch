@@ -681,3 +681,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new `dropout=0.25` result is not stable enough yet to trust at face value. Re-running the exact same setup lands far away from the previous best, which means the recent high-dropout gains are sitting in a high-variance regime rather than a cleanly repeatable optimum.
 - Evidence: very strong. Compute is essentially identical, so this is not a throughput artifact; it is optimization instability.
 - Next action: stop fine interpolation around `0.24-0.25` until the variance is understood. The next most useful test is to re-run the stronger `dropout=0.2` setting once, to determine whether the whole high-dropout regime is unstable or whether `0.25` specifically is the brittle point.
+
+### Round 93 - `cb1e715` - reproducibility check for dropout 0.2
+
+- Result: `val_cer=0.618174`, `word_acc=0.155022`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.018771` CER worse
+- Keypoint: `dropout=0.2` is materially more stable than `0.25`, but it still does not consistently reproduce the very best lucky run. This points to a real high-dropout benefit combined with a still-noisy optimization regime, rather than pure measurement noise or pure scalar overfitting.
+- Evidence: solid. The rerun stays near the stronger region instead of collapsing, but it remains clearly behind the single best result.
+- Next action: test a stabilization move rather than another plain rerun. The most justified next experiment is `dropout=0.25` with a slightly lower learning rate, to see whether the strong-but-brittle high-dropout regime can be made reproducible.
