@@ -129,3 +129,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: feature conditioning at the sequence head was the missing piece. Normalizing the bidirectional LSTM output before dropout and classification materially improves both CER and exact-match accuracy, which strongly suggests the classifier was previously seeing poorly scaled per-timestep features.
 - Evidence: very clear. This is a large CER gain with matching word-accuracy improvement and no memory penalty.
 - Next action: keep LayerNorm as the new base and test a lightweight temporal refinement block on top of it, because the success of head-side conditioning suggests further sequence-local smoothing may yield additional gains without replacing the strong LSTM backbone.
+
+### Round 24 - `6435adc` - residual temporal refine after LayerNorm
+
+- Result: `val_cer=0.773891`, `word_acc=0.054585`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `7192ce2`: `+0.041382` CER worse
+- Keypoint: the gain from LayerNorm does not extend to adding extra local temporal mixing. The model likely already has enough sequence context from the bidirectional LSTM, and the added conv block introduces unnecessary transformation noise or optimization burden at the head.
+- Evidence: very clear. CER regresses heavily despite similar memory use, so this is not a marginal tradeoff.
+- Next action: keep LayerNorm as the new base, but stay closer to its apparent benefit by trying per-timestep channel refinement next instead of extra temporal mixing.
