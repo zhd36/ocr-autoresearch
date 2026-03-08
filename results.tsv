@@ -5,3 +5,4 @@ commit	val_cer	word_acc	memory_gb	status	description
 89316dc	0.784983	0.026201	3.4	discard	higher lr at small batch
 a4bfa5a	0.769625	0.037118	3.4	keep	total batch 32
 1c010c6	0.792662	0.034934	3.4	discard	per-device batch 16
+6552c67	0.779437	0.041485	3.4	discard	remove dropout
