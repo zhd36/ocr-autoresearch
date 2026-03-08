@@ -99,6 +99,7 @@ class ResNetAsterEncoder(nn.Module):
         layer1_width_stride=2,
         layer2_width_stride=2,
         rnn_input_dim=512,
+        lstm_proj_size=0,
     ):
         super().__init__()
         self.layer0 = nn.Sequential(
@@ -118,16 +119,18 @@ class ResNetAsterEncoder(nn.Module):
         self.input_proj = None
         if rnn_input_dim != 512:
             self.input_proj = nn.Linear(512, rnn_input_dim)
+        self.rnn_output_dim = lstm_proj_size if lstm_proj_size > 0 else lstm_hidden
 
         self.rnn = nn.LSTM(
             input_size=rnn_input_dim,
             hidden_size=lstm_hidden,
+            proj_size=lstm_proj_size,
             num_layers=lstm_layers,
             bidirectional=True,
             batch_first=True,
             dropout=0.0 if lstm_layers == 1 else 0.1,
         )
-        self.out_channels = 2 * lstm_hidden
+        self.out_channels = 2 * self.rnn_output_dim
 
         for module in self.modules():
             if isinstance(module, nn.Conv2d):
@@ -176,6 +179,7 @@ class CRNNConfig:
     layer1_width_stride: int = 2
     layer2_width_stride: int = 2
     rnn_input_dim: int = 512
+    lstm_proj_size: int = 0
     use_rnn_skip: bool = False
     dropout: float = 0.1
 
@@ -191,6 +195,7 @@ class CRNN(nn.Module):
             layer1_width_stride=config.layer1_width_stride,
             layer2_width_stride=config.layer2_width_stride,
             rnn_input_dim=config.rnn_input_dim,
+            lstm_proj_size=config.lstm_proj_size,
         )
         self.rnn_skip = None
         if config.use_rnn_skip:
@@ -306,6 +311,7 @@ LSTM_LAYERS = env_int("LSTM_LAYERS", 2)
 LAYER1_WIDTH_STRIDE = env_int("LAYER1_WIDTH_STRIDE", 2)
 LAYER2_WIDTH_STRIDE = env_int("LAYER2_WIDTH_STRIDE", 2)
 RNN_INPUT_DIM = env_int("RNN_INPUT_DIM", 512)
+LSTM_PROJ_SIZE = env_int("LSTM_PROJ_SIZE", 0)
 USE_RNN_SKIP = env_bool("USE_RNN_SKIP", False)
 DROPOUT = env_float("DROPOUT", 0.1)
 
@@ -340,6 +346,7 @@ config = CRNNConfig(
     layer1_width_stride=LAYER1_WIDTH_STRIDE,
     layer2_width_stride=LAYER2_WIDTH_STRIDE,
     rnn_input_dim=RNN_INPUT_DIM,
+    lstm_proj_size=LSTM_PROJ_SIZE,
     use_rnn_skip=USE_RNN_SKIP,
     dropout=DROPOUT,
 )
