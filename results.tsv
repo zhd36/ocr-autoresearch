@@ -16,3 +16,4 @@ b379ced	0.765785	0.052402	3.4	discard	enable amp
 3de4fdb	0.765358	0.056769	3.4	discard	mild weight decay
 41bad42	0.774744	0.050218	3.4	discard	lighter weight decay
 7ed342e	0.762799	0.045852	3.4	discard	lower lr
+1884e34	0.764078	0.045852	3.4	discard	higher lr

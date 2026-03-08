@@ -81,3 +81,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: lowering the base learning rate to `5e-4` did not stabilize into a better solution; it mostly slowed progress within the fixed time budget. That points to optimization speed, not excessive aggressiveness, as the more relevant constraint here.
 - Evidence: clear enough to bracket one side of the LR search. The regression is smaller than the weight-decay failures, but still comfortably worse than the best run.
 - Next action: test a modestly higher LR (`7e-4`) to see whether the current best sits just below the useful aggressiveness limit or already near the optimum.
+
+### Round 18 - `1884e34` - higher lr
+
+- Result: `val_cer=0.764078`, `word_acc=0.045852`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.009385` CER worse
+- Keypoint: increasing LR to `7e-4` also misses the best, so the current `6e-4` is not simply too conservative. The LR bracket now looks well centered: both lower and higher settings regress by a similar amount.
+- Evidence: clear. With both sides of the bracket worse, the search should move on instead of spending more rounds on nearby scalar LR tweaks.
+- Next action: pivot to dropout-strength tuning, because regularization via classifier dropout is cheaper and more targeted than weight decay and was not yet mapped around the current best regime.
