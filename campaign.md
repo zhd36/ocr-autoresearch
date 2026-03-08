@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `a84f80a`
-- Description: `remove warmup`
-- `val_cer`: `0.754693`
-- `word_acc`: `0.045852`
+- Commit: `7192ce2`
+- Description: `sequence LayerNorm before classifier`
+- `val_cer`: `0.732509`
+- `word_acc`: `0.069869`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -121,3 +121,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: replacing the bidirectional LSTM with a bidirectional GRU reduced parameters (`16.2M -> 15.4M`) but did not increase useful throughput enough to matter, and the weaker sequence model hurt recognition quality. This task seems more sensitive to recurrent expressivity than to that small parameter reduction.
 - Evidence: clear. CER drops materially, word accuracy drops, and step count did not improve enough to justify the trade.
 - Next action: keep the LSTM backbone and try a lower-risk structural refinement on top of it, starting with a sequence `LayerNorm` before the classifier to improve feature conditioning without weakening temporal modeling.
+
+### Round 23 - `7192ce2` - sequence LayerNorm before classifier
+
+- Result: `val_cer=0.732509`, `word_acc=0.069869`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `a84f80a`: `-0.022184` CER better
+- Keypoint: feature conditioning at the sequence head was the missing piece. Normalizing the bidirectional LSTM output before dropout and classification materially improves both CER and exact-match accuracy, which strongly suggests the classifier was previously seeing poorly scaled per-timestep features.
+- Evidence: very clear. This is a large CER gain with matching word-accuracy improvement and no memory penalty.
+- Next action: keep LayerNorm as the new base and test a lightweight temporal refinement block on top of it, because the success of head-side conditioning suggests further sequence-local smoothing may yield additional gains without replacing the strong LSTM backbone.
