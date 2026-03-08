@@ -1,0 +1,2 @@
+commit	val_cer	word_acc	memory_gb	status	description
+3ebd8da	0.872440	0.000000	3.4	keep	baseline crnn+ctc
