@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `fe69bc3`
-- Description: `GroupNorm encoder blocks`
-- `val_cer`: `0.675341`
-- `word_acc`: `0.104803`
+- Commit: `924a75b`
+- Description: `lower lr on conditioned backbone`
+- `val_cer`: `0.663396`
+- `word_acc`: `0.124454`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -281,3 +281,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: on the current SE + GroupNorm + dual-LayerNorm backbone, identity-biased residual initialization is strongly harmful. This model is no longer optimization-limited in the way a plain residual stack might be; it needs the residual branches to contribute immediately.
 - Evidence: decisive. The collapse is too large to interpret as noise.
 - Next action: stop adding optimization crutches inside the architecture. The next targeted move should be to retune optimization for the new stronger backbone, because all earlier LR conclusions were measured on materially weaker models.
+
+### Round 43 - `924a75b` - lower lr on conditioned backbone
+
+- Result: `val_cer=0.663396`, `word_acc=0.124454`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `fe69bc3`: `-0.011945` CER better
+- Keypoint: the stronger conditioned backbone changes the optimizer regime. Once SE, GroupNorm, and the two LayerNorm boundaries are in place, the old `6e-4` learning rate becomes too aggressive, and `5e-4` yields a clear gain in both CER and word accuracy.
+- Evidence: very clear. This is a meaningful main-metric improvement plus the strongest word accuracy seen so far.
+- Next action: stop treating optimization settings as settled. The next round should bracket around `5e-4` on the new backbone rather than jumping back to unrelated structural ideas.

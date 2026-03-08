@@ -41,3 +41,4 @@ a43c457	0.703925	0.087336	3.4	discard	fuse layer4 features into layer5
 9050c23	0.682167	0.113537	3.4	discard	pre-RNN projection bottleneck
 a3f35e9	0.692833	0.080786	3.4	discard	residual pre-RNN adapter
 bfd58c2	0.825085	0.067686	3.4	discard	zero-init residual branch norms
+924a75b	0.663396	0.124454	3.4	keep	lower lr on conditioned backbone
