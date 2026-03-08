@@ -96,3 +96,4 @@ a802e69	0.601536	0.163755	3.4	discard	stabilize high dropout with slower beta2
 dbeb4af	0.638652	0.155022	3.4	discard	combine stable dropout with slower beta2
 aebe7d7	0.702218	0.117904	3.4	discard	locked dropout on one-layer best
 00fdead	0.665102	0.133188	3.4	discard	light width masking on stable one-layer head
+3741cea	0.643345	0.144105	3.4	discard	multi-sample dropout on high-dropout head

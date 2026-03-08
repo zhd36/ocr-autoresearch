@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 90
-- Next round index: 91
+- Current logged rounds: 99
+- Next round index: 100
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -729,3 +729,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: pushing regularization into input space via width masking is not a good substitute for output-side calibration on this benchmark. Even a light stripe mask degrades character learning enough to outweigh any robustness gain.
 - Evidence: strong. The run remains healthy but clearly worse, so this is not a narrow tuning miss.
 - Next action: abandon input masking and return to the head where the signal is strongest. The next most coherent move is multi-sample dropout, which can preserve the benefits of strong dropout while reducing its training variance.
+
+### Round 99 - `3741cea` - multi-sample dropout on high-dropout head
+
+- Result: `val_cer=0.643345`, `word_acc=0.144105`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.043942` CER worse
+- Keypoint: averaging multiple dropout samples inside each training step does not preserve the useful part of the strong-dropout regime. It removes too much of the sharp stochastic pressure that was apparently helping calibrate the one-layer `512` head, while still paying the optimization cost of the noisier setting.
+- Evidence: strong. The run stays healthy and compute remains within budget, but quality drops far enough that this is not a borderline variance result.
+- Next action: close the dropout-noise-shaping branch. The next experiments should change the classifier interface itself, such as the output normalization or logit geometry, because the main remaining signal is still concentrated at the head rather than in the encoder.
