@@ -713,3 +713,19 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the `beta2=0.9985` stabilization effect does not transfer cleanly to the more stable `dropout=0.2` regime. That means the near-success in Round 95 was specific to the brittle high-dropout corner, not a generally better optimizer setting.
 - Evidence: strong. Compute remains unchanged, but CER falls back substantially.
 - Next action: stop spending rounds on moment-smoothing fixes for the high-dropout regime. The next experiments should either revisit the best visible architecture with a different kind of regularization or return to a more structural modification above the now well-understood `1-layer, hidden=512` backbone.
+
+### Round 97 - `aebe7d7` - locked dropout on one-layer best
+
+- Result: `val_cer=0.702218`, `word_acc=0.117904`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.102815` CER worse
+- Keypoint: the beneficial regularization is not “time-consistent feature dropping.” For OCR, forcing the same dropout mask across the whole sequence removes too much persistent channel evidence and damages alignment more than it reduces variance.
+- Evidence: decisive. Compute is unchanged, yet CER collapses badly.
+- Next action: stop changing the time-structure of dropout masks. If high dropout is useful but noisy, the next better-targeted fix is to smooth the stochastic training signal itself, not to make the mask more coherent over time.
+
+### Round 98 - `00fdead` - light width masking on stable one-layer head
+
+- Result: `val_cer=0.665102`, `word_acc=0.133188`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.065699` CER worse
+- Keypoint: pushing regularization into input space via width masking is not a good substitute for output-side calibration on this benchmark. Even a light stripe mask degrades character learning enough to outweigh any robustness gain.
+- Evidence: strong. The run remains healthy but clearly worse, so this is not a narrow tuning miss.
+- Next action: abandon input masking and return to the head where the signal is strongest. The next most coherent move is multi-sample dropout, which can preserve the benefits of strong dropout while reducing its training variance.
