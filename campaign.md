@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 77
-- Next round index: 78
+- Current logged rounds: 78
+- Next round index: 79
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -561,3 +561,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the real bottleneck in the recurrent head was not strictly depth; it was the depth-capacity-budget balance. A single bidirectional LSTM layer with much larger hidden size (`512`) keeps throughput essentially intact while giving the model a stronger per-step sequence representation than the previous two-layer `256` stack.
 - Evidence: strong. CER reaches a new best, word accuracy matches the previous best, and step count (`4213`) remains effectively unchanged.
 - Next action: treat the one-layer-wide regime as a serious contender rather than a side branch. The next experiments should bracket recurrent width around `512` to see whether this improvement peaks here or continues upward.
+
+### Round 78 - `b8968bd` - lower bracket for one-layer width
+
+- Result: `val_cer=0.632253`, `word_acc=0.157205`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.013226` CER worse
+- Keypoint: the one-layer solution is genuinely width-hungry. Dropping from `512` to `448` gives back too much sequence capacity, even though throughput stays strong.
+- Evidence: solid. Step count remains high (`4263`) and word accuracy stays competitive, but CER clearly regresses.
+- Next action: the next informative bracket is upward, not downward. Test a slightly larger one-layer hidden size above `512` to see whether the new best is still on the rising part of the curve or already at the top.
