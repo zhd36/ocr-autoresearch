@@ -69,3 +69,4 @@ c2aec4b	0.750000	0.076419	3.4	discard	enable bf16 amp
 e3ebdda	0.692406	0.120087	3.4	discard	remove dropout on optimizer peak
 7792353	0.632253	0.146288	3.4	discard	negative blank bias for CTC
 7938f4e	0.655290	0.148472	3.4	discard	milder negative blank bias
+dbe505d	0.650171	0.137555	3.4	discard	higher lr floor with slow beta2

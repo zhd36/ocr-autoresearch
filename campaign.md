@@ -513,3 +513,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the blank-bias direction is not peaking between `0` and `-1.0`; the milder bias is worse, which suggests the whole mechanism is at best a secondary effect and not a path to the next meaningful CER drop.
 - Evidence: solid. It remains much healthier than the clearly bad directions, but it is still distinctly worse than both the best run and even the stronger `-1.0` variant.
 - Next action: stop prioritizing blank-bias bracketing. The next search should return to optimizer-schedule interactions that may have shifted under `beta2=0.998`, or another lightweight head-side modification with a stronger theoretical case.
+
+### Round 72 - `dbe505d` - higher lr floor with slow beta2
+
+- Result: `val_cer=0.650171`, `word_acc=0.137555`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.028157` CER worse
+- Keypoint: keeping a higher learning-rate floor does not compensate for the slower `beta2`; it mostly prevents the run from tightening late. The current best setup seems to benefit from very stable scaling early and genuinely small steps at the end.
+- Evidence: solid. The run stays healthy but clearly underperforms the best, with no sign of a late-stage payoff from the higher floor.
+- Next action: treat `FINAL_LR_FRAC=0.1` as still locked even under `beta2=0.998`. The next experiments should move away from global schedule tweaks and focus on another high-leverage part of the head or loss dynamics.
