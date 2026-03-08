@@ -32,3 +32,4 @@ fe69bc3	0.675341	0.104803	3.4	keep	GroupNorm encoder blocks
 6f969d8	0.812713	0.030568	3.4	discard	remove post-LSTM LayerNorm
 ef646c4	0.704352	0.098253	3.4	discard	remove pre-RNN LayerNorm
 2a7885b	0.718003	0.072052	3.4	discard	RMSNorm head after LSTM
+14a5413	0.763652	0.063319	3.4	discard	RMSNorm before LSTM

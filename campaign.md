@@ -209,3 +209,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: at the classifier boundary, pure scale normalization is not enough. The model benefits from full centering-and-scaling of `LayerNorm`, not just RMS-based rescaling.
 - Evidence: clear. The regression is substantial, and throughput also falls rather than improving.
 - Next action: restore head `LayerNorm` and test the same RMSNorm swap at the pre-RNN boundary, where the normalization role may be less tied to classifier calibration.
+
+### Round 34 - `14a5413` - RMSNorm before LSTM
+
+- Result: `val_cer=0.763652`, `word_acc=0.063319`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.088311` CER worse
+- Keypoint: the pre-RNN boundary also wants full `LayerNorm`, not RMS-only rescaling. The recurrent stack appears highly sensitive to centered sequence features, not just normalized magnitudes.
+- Evidence: decisive. This is a large regression and clearly worse than the existing conditioned base.
+- Next action: stop norm-form exploration and use the last two rounds on modest architecture-capacity tests on top of the now well-validated normalization/attention backbone.
