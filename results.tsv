@@ -47,3 +47,4 @@ fd7ffef	0.673208	0.131004	3.4	discard	lower lr further
 02522af	0.677901	0.133188	3.4	discard	lower final lr floor
 9fb53d1	0.665956	0.120087	3.4	discard	higher final lr floor
 4a7ad3c	0.747440	0.091703	3.4	discard	small warmup on conditioned backbone
+d94fa70	0.646758	0.137555	3.4	keep	higher beta2 on conditioned backbone

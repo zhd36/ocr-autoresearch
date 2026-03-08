@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `ee39e2e`
-- Description: `lower lr bracket`
-- `val_cer`: `0.648464`
-- `word_acc`: `0.135371`
+- Commit: `d94fa70`
+- Description: `higher beta2 on conditioned backbone`
+- `val_cer`: `0.646758`
+- `word_acc`: `0.137555`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -329,3 +329,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: even on the new, lower-LR regime, warmup is still decisively harmful. This backbone wants to start learning immediately rather than spending the early budget ramping up.
 - Evidence: decisive. The regression is far too large to treat as a minor schedule mismatch.
 - Next action: keep `WARMUP_RATIO=0` fixed going forward. Future optimizer work should focus on momentum/regularization interactions around the new best LR, not on slower starts.
+
+### Round 49 - `d94fa70` - higher beta2 on conditioned backbone
+
+- Result: `val_cer=0.646758`, `word_acc=0.137555`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `ee39e2e`: `-0.001706` CER better
+- Keypoint: the new low-LR regime benefits from a slightly longer second-moment memory. That means the remaining noise is not from under-updating; it is from overly reactive adaptive scaling.
+- Evidence: good but smaller than the earlier LR gains. The improvement is real on both CER and word accuracy, though now the increments are tighter.
+- Next action: bracket the upper side of `beta2` next, because the signal points toward smoother adaptation, but we still need to know where it starts becoming too inert for a 5-minute budget.
