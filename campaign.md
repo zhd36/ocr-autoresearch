@@ -273,3 +273,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the problem in Round 40 was not only the bottleneck width. Adding a learned adapter before the LSTM, even without reducing the final dimensionality, still hurts. That means the current pre-RNN normalization is already providing the useful alignment signal, and extra transform depth there is mostly wasted under the time budget.
 - Evidence: clear. The adapter is materially worse than the best run and worse than the simpler bottleneck variant on the main metric.
 - Next action: stop spending rounds on pre-RNN adapters and instead test optimization-friendly residual-block initialization, where the current deep conditioned encoder may still gain convergence speed within 5 minutes.
+
+### Round 42 - `bfd58c2` - zero-init residual branch norms
+
+- Result: `val_cer=0.825085`, `word_acc=0.067686`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.149744` CER worse
+- Keypoint: on the current SE + GroupNorm + dual-LayerNorm backbone, identity-biased residual initialization is strongly harmful. This model is no longer optimization-limited in the way a plain residual stack might be; it needs the residual branches to contribute immediately.
+- Evidence: decisive. The collapse is too large to interpret as noise.
+- Next action: stop adding optimization crutches inside the architecture. The next targeted move should be to retune optimization for the new stronger backbone, because all earlier LR conclusions were measured on materially weaker models.
