@@ -201,3 +201,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the pre-RNN LayerNorm also contributes meaningfully, but its role is secondary to the head LayerNorm. Removing it hurts, though not nearly as catastrophically as removing the post-LSTM normalization.
 - Evidence: clear. The regression is large enough to keep the module, and the contrast with Round 31 gives a useful ranking of importance between the two normalization points.
 - Next action: keep both normalization points in the base model and spend the final rounds testing whether alternative norm forms or modest capacity changes can improve on this conditioned backbone.
+
+### Round 33 - `2a7885b` - RMSNorm head after LSTM
+
+- Result: `val_cer=0.718003`, `word_acc=0.072052`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.042662` CER worse
+- Keypoint: at the classifier boundary, pure scale normalization is not enough. The model benefits from full centering-and-scaling of `LayerNorm`, not just RMS-based rescaling.
+- Evidence: clear. The regression is substantial, and throughput also falls rather than improving.
+- Next action: restore head `LayerNorm` and test the same RMSNorm swap at the pre-RNN boundary, where the normalization role may be less tied to classifier calibration.
