@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 89
-- Next round index: 90
+- Current logged rounds: 90
+- Next round index: 91
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -657,3 +657,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the strong-dropout regime still has a little headroom above `0.2`, but the gain has become much smaller. This suggests the curve is flattening and we are approaching the new regularization peak rather than still climbing rapidly.
 - Evidence: moderate. CER improves again with nearly identical compute, though word accuracy gives back some of the large gain from Round 88.
 - Next action: take one more upward step to `dropout=0.3`. That should tell us whether the optimum continues upward or whether the curve has already started to turn.
+
+### Round 90 - `6b91f9a` - upper edge of new dropout regime
+
+- Result: `val_cer=0.627133`, `word_acc=0.150655`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.027730` CER worse
+- Keypoint: the new dropout optimum has already been crossed by `0.3`. The strong regularization regime is real, but there is still a narrow sweet spot; going too high quickly starts to suppress useful fitting rather than just calibrating confidence.
+- Evidence: strong. Compute is unchanged, yet CER falls back substantially.
+- Next action: lock the optimum to the low-to-mid `0.2x` range instead of exploring higher values. The best next move is a midpoint refinement such as `0.225` or `0.24`, or a return to structure on top of the now much stronger regularized one-layer head.
