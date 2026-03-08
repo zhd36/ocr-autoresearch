@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ocr-autoresearch"
 version = "0.1.0"
@@ -6,8 +10,10 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "datasets>=4.0.0",
-    "numpy>=1.26.0",
+    "numpy>=1.26.0,<2",
     "pillow>=10.0.0",
     "torch>=2.5.0",
 ]
 
+[tool.setuptools]
+py-modules = ["prepare", "train"]
