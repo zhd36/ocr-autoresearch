@@ -97,3 +97,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: reducing dropout from `0.1` to `0.05` sharply hurts CER, which suggests the current head is not over-regularized. In this setup, that dropout is likely doing real work against overconfident CTC decoding rather than merely slowing fitting.
 - Evidence: very clear. The regression is large enough to rule out this side of the dropout search.
 - Next action: test `dropout=0.15` to see whether the best region is centered around `0.1` or whether slightly stronger dropout can improve robustness without repeating the weight-decay failure mode.
+
+### Round 20 - `a6d2344` - stronger dropout
+
+- Result: `val_cer=0.783703`, `word_acc=0.039301`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.029010` CER worse
+- Keypoint: stronger dropout is even worse than lighter dropout, so the optimum is not merely “some regularization”; it is specifically close to the current `0.1`. This axis is now well bracketed.
+- Evidence: very clear. Both sides of the dropout sweep regress substantially, which makes the default value look robust rather than accidental.
+- Next action: stop spending rounds on dropout and move to AdamW momentum settings (`betas`), since short-budget sequence training can be sensitive to adaptation timescales even when LR is already tuned.
