@@ -73,3 +73,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: reducing weight decay did not recover the CER loss. The direction itself appears mismatched to this short-budget setting: regularization is consuming fitting capacity faster than it buys useful generalization.
 - Evidence: clear. Two consecutive weight-decay settings both miss the best by a meaningful margin, and the lighter setting gets even worse CER.
 - Next action: stop exploring weight decay and move to base learning-rate tuning at the proven `batch=32`, since optimization speed is now a more plausible bottleneck than overfitting.
+
+### Round 17 - `7ed342e` - lower lr
+
+- Result: `val_cer=0.762799`, `word_acc=0.045852`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.008106` CER worse
+- Keypoint: lowering the base learning rate to `5e-4` did not stabilize into a better solution; it mostly slowed progress within the fixed time budget. That points to optimization speed, not excessive aggressiveness, as the more relevant constraint here.
+- Evidence: clear enough to bracket one side of the LR search. The regression is smaller than the weight-decay failures, but still comfortably worse than the best run.
+- Next action: test a modestly higher LR (`7e-4`) to see whether the current best sits just below the useful aggressiveness limit or already near the optimum.
