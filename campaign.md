@@ -361,3 +361,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: even extremely small weight decay is still a net negative in this regime. The current backbone and low-LR optimizer appear to benefit more from preserving fitting capacity than from additional parameter shrinkage.
 - Evidence: clear. The regression is too large to justify keeping the change.
 - Next action: keep `weight_decay=0` fixed and move future optimizer experiments toward first-moment behavior or other lightweight stabilization ideas rather than explicit regularization.
+
+### Round 53 - `51c91ba` - higher beta1 on conditioned backbone
+
+- Result: `val_cer=0.669369`, `word_acc=0.124454`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `d94fa70`: `+0.022611` CER worse
+- Keypoint: once `beta2` is already smoothed to `0.995`, raising `beta1` to `0.95` makes the optimizer too inert for a 5-minute budget. The remaining issue is not lack of momentum; it is balancing responsiveness against noisy scaling.
+- Evidence: clear. The regression is meaningful and consistent with over-smoothing updates.
+- Next action: keep `beta2=0.995`, but test the opposite side with a lower `beta1` to see whether more responsive first-moment updates pair better with the smoother second-moment estimate.
