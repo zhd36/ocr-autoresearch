@@ -7,6 +7,7 @@ This file is the only one meant to be edited during autonomous research.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from contextlib import nullcontext
 import math
 import os
@@ -200,6 +201,17 @@ def count_parameters(model):
     return sum(param.numel() for param in model.parameters())
 
 
+@torch.no_grad()
+def update_ema_model(ema_model, model, decay):
+    ema_params = dict(ema_model.named_parameters())
+    for name, param in model.named_parameters():
+        ema_params[name].lerp_(param.detach(), 1.0 - decay)
+
+    ema_buffers = dict(ema_model.named_buffers())
+    for name, buffer in model.named_buffers():
+        ema_buffers[name].copy_(buffer)
+
+
 def get_lr(progress):
     if progress < WARMUP_RATIO:
         return LR * (progress / max(WARMUP_RATIO, 1e-8))
@@ -255,6 +267,7 @@ BETAS = env_float_tuple("BETAS", (0.9, 0.99))
 WARMUP_RATIO = env_float("WARMUP_RATIO", 0.0)
 FINAL_LR_FRAC = env_float("FINAL_LR_FRAC", 0.1)
 GRAD_CLIP = env_float("GRAD_CLIP", 5.0)
+EMA_DECAY = env_float("EMA_DECAY", 0.0)
 
 # Model
 LSTM_HIDDEN = env_int("LSTM_HIDDEN", 256)
@@ -297,6 +310,11 @@ grad_accum_steps = TOTAL_BATCH_SIZE // DEVICE_BATCH_SIZE
 
 model = CRNN(config, num_classes=codec.num_classes).to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, betas=BETAS, weight_decay=WEIGHT_DECAY)
+ema_model = None
+if EMA_DECAY > 0.0:
+    ema_model = deepcopy(model).to(device)
+    ema_model.requires_grad_(False)
+    ema_model.eval()
 num_params = count_parameters(model)
 
 train_loader = make_dataloader(codec, DEVICE_BATCH_SIZE, "train", infinite=True)
@@ -317,7 +335,7 @@ print(
     f"total_batch={TOTAL_BATCH_SIZE}, device_batch={DEVICE_BATCH_SIZE}, "
     f"eval_batch={EVAL_BATCH_SIZE}, lr={LR}, weight_decay={WEIGHT_DECAY}, "
     f"betas={BETAS}, warmup_ratio={WARMUP_RATIO}, final_lr_frac={FINAL_LR_FRAC}, "
-    f"grad_clip={GRAD_CLIP}, use_amp={USE_AMP}"
+    f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}"
 )
 
 
@@ -369,6 +387,8 @@ while True:
     else:
         torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP)
         optimizer.step()
+    if ema_model is not None:
+        update_ema_model(ema_model, model, EMA_DECAY)
 
     torch.cuda.synchronize() if device.type == "cuda" else None
     dt = time.time() - t0
@@ -400,7 +420,8 @@ print()
 # Final evaluation
 # ---------------------------------------------------------------------------
 
-metrics = evaluate_cer(model, codec, EVAL_BATCH_SIZE, device)
+eval_model = ema_model if ema_model is not None else model
+metrics = evaluate_cer(eval_model, codec, EVAL_BATCH_SIZE, device)
 t_end = time.time()
 peak_vram_mb = (
     torch.cuda.max_memory_allocated() / 1024 / 1024
