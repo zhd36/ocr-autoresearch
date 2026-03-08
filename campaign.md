@@ -705,3 +705,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the high-dropout regime does respond to moment stabilization. Slowing `beta2` slightly from `0.998` to `0.9985` pulls the brittle `dropout=0.25` setup back into the low-`0.60` range and improves word accuracy, even though it still does not beat the single best run.
 - Evidence: useful and credible. This is close enough to the current best to indicate real signal rather than random survival.
 - Next action: combine the apparent stabilization effect with the more reproducible dropout side. The next most informative run is `dropout=0.2` with `beta2=0.9985`.
+
+### Round 96 - `dbeb4af` - combine stable dropout with slower beta2
+
+- Result: `val_cer=0.638652`, `word_acc=0.155022`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.039249` CER worse
+- Keypoint: the `beta2=0.9985` stabilization effect does not transfer cleanly to the more stable `dropout=0.2` regime. That means the near-success in Round 95 was specific to the brittle high-dropout corner, not a generally better optimizer setting.
+- Evidence: strong. Compute remains unchanged, but CER falls back substantially.
+- Next action: stop spending rounds on moment-smoothing fixes for the high-dropout regime. The next experiments should either revisit the best visible architecture with a different kind of regularization or return to a more structural modification above the now well-understood `1-layer, hidden=512` backbone.
