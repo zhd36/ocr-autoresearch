@@ -449,3 +449,19 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: once `beta2` is this slow, raising the nominal learning rate is catastrophic. The smoothed scale estimate is helping only when the underlying step size stays restrained; with `5e-4`, the optimizer appears to outrun its own variance calibration and never settles.
 - Evidence: decisive. Both CER and word accuracy collapse, and the late-stage loss remains much too high.
 - Next action: bracket in the opposite direction. The right question is no longer whether `LR` can go higher, but whether the `beta2=0.998` optimum actually wants a slightly smaller step such as `4.25e-4`.
+
+### Round 64 - `42fbde7` - lower lr under slow beta2
+
+- Result: `val_cer=0.637799`, `word_acc=0.155022`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.015785` CER worse
+- Keypoint: `LR=4.5e-4` remains the local optimum even after the major `beta2` shift. Lowering the step size makes training safer than `5e-4`, but it also gives back too much progress inside the fixed 5-minute budget.
+- Evidence: strong. The run is much healthier than Round 63, but still clearly behind the best.
+- Next action: freeze both `LR=4.5e-4` and `beta2=0.998` as the new optimizer base, then return to structure. The most plausible remaining model-side bottleneck is the handoff from 2D features to the 1D recurrent sequence.
+
+### Round 65 - `139bf83` - add pre-RNN local mixer
+
+- Result: `val_cer=0.709471`, `word_acc=0.113537`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.087457` CER worse
+- Keypoint: adding a local temporal convolution before the LSTM is not helping the current encoder. The CNN is already producing sufficiently mixed local width context, and the extra pre-RNN mixer mostly adds optimization burden and steals steps without improving the representation passed to the recurrent head.
+- Evidence: strong. CER regresses heavily, memory rises slightly, and the run completes fewer optimization steps because of the added compute.
+- Next action: stop pushing the pre-RNN convolution direction. A more promising lightweight structure change is to test explicit sequence position information at the same handoff point, because that changes the inductive bias without adding another heavy transformation block.
