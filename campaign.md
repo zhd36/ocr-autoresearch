@@ -665,3 +665,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new dropout optimum has already been crossed by `0.3`. The strong regularization regime is real, but there is still a narrow sweet spot; going too high quickly starts to suppress useful fitting rather than just calibrating confidence.
 - Evidence: strong. Compute is unchanged, yet CER falls back substantially.
 - Next action: lock the optimum to the low-to-mid `0.2x` range instead of exploring higher values. The best next move is a midpoint refinement such as `0.225` or `0.24`, or a return to structure on top of the now much stronger regularized one-layer head.
+
+### Round 91 - `abf2518` - midpoint refinement in new dropout peak
+
+- Result: `val_cer=0.633959`, `word_acc=0.141921`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.034556` CER worse
+- Keypoint: the high-performing dropout regime is not behaving like a smooth convex scalar sweep. A tiny move from `0.25` down to `0.24` causes a large regression, which means either the optimum is unusually sharp or this region has enough run-to-run instability that a direct reproducibility check is now more valuable than further interpolation guesses.
+- Evidence: strong. Compute is unchanged, yet the metric drops far more than expected for such a small scalar change.
+- Next action: rerun the current best `dropout=0.25` exactly once to verify whether that result is stable. Without that check, nearby scalar conclusions are too brittle to trust.
