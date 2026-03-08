@@ -74,3 +74,4 @@ e431149	0.715017	0.043668	2.6	discard	preserve width at layer2
 95cfc68	0.814420	0.032751	2.6	discard	preserve width with smaller recurrent head
 f934290	0.692833	0.122271	3.4	discard	shallower recurrent stack
 ca7fcdf	0.643345	0.122271	3.4	discard	wider one-layer LSTM
+10b4225	0.619027	0.159389	3.4	keep	even wider one-layer LSTM

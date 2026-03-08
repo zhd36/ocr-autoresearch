@@ -5,17 +5,17 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 76
-- Next round index: 77
+- Current logged rounds: 77
+- Next round index: 78
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
 
 ## Current Best Result
 
-- Commit: `5f1c9ca`
-- Description: `beta2 bracket above new best`
-- `val_cer`: `0.622014`
+- Commit: `10b4225`
+- Description: `even wider one-layer LSTM`
+- `val_cer`: `0.619027`
 - `word_acc`: `0.159389`
 - `memory_gb`: `3.4`
 
@@ -553,3 +553,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the one-layer path has real signal once capacity is restored. Most of the Round 75 failure came from insufficient recurrent capacity rather than from shallowness alone, but a single wider layer still does not quite match the accuracy of the current two-layer best.
 - Evidence: strong. CER recovers dramatically relative to Round 75 while still keeping high step count (`4331`) and modest parameter count (`16.2M`).
 - Next action: keep this line alive for one more bracket step. The best next test is a slightly wider one-layer LSTM, such as `hidden=448` or `512`, to see whether it can fully convert the saved recurrent depth into enough single-layer capacity to challenge the current best.
+
+### Round 77 - `10b4225` - even wider one-layer LSTM
+
+- Result: `val_cer=0.619027`, `word_acc=0.159389`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `5f1c9ca`: `-0.002987` CER better
+- Keypoint: the real bottleneck in the recurrent head was not strictly depth; it was the depth-capacity-budget balance. A single bidirectional LSTM layer with much larger hidden size (`512`) keeps throughput essentially intact while giving the model a stronger per-step sequence representation than the previous two-layer `256` stack.
+- Evidence: strong. CER reaches a new best, word accuracy matches the previous best, and step count (`4213`) remains effectively unchanged.
+- Next action: treat the one-layer-wide regime as a serious contender rather than a side branch. The next experiments should bracket recurrent width around `512` to see whether this improvement peaks here or continues upward.
