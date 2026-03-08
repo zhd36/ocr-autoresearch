@@ -433,3 +433,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the second-moment smoothing sweet spot is real and sharp. `beta2=0.999` crosses from useful stabilization into harmful inertia, so the optimizer stops adapting quickly enough late in the 5-minute window.
 - Evidence: strong. The regression is large enough that this is not just run noise, especially since word accuracy falls with it.
 - Next action: refine inside the narrow high-performing window instead of pushing the edge further. The best next measurement is a midpoint such as `beta2=0.9985` to check whether the optimum sits slightly above `0.998` or whether `0.998` is already the peak.
+
+### Round 62 - `c9e02f4` - midpoint beta2 refinement
+
+- Result: `val_cer=0.647611`, `word_acc=0.161572`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.025597` CER worse
+- Keypoint: the optimum is not a broad plateau; it is a narrow alignment. `beta2=0.998` works because it smooths bursty scaling just enough, but even a small extra increase to `0.9985` already makes the optimizer hold stale scale information for too long in this short training budget.
+- Evidence: very strong. CER regresses sharply even though word accuracy ticks up, which indicates the model is becoming more decisive but less character-precise.
+- Next action: freeze `beta2=0.998` as the new optimizer base. The next high-value search should move laterally rather than further up `beta2`, most likely retuning `LR` around this new optimum or re-evaluating lightweight structural changes under the now-correct optimizer.
