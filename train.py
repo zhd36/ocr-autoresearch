@@ -54,6 +54,20 @@ def norm2d(channels):
     return nn.GroupNorm(groups, channels)
 
 
+class LockedDropout(nn.Module):
+    def __init__(self, p=0.5):
+        super().__init__()
+        self.p = p
+
+    def forward(self, x):
+        if not self.training or self.p <= 0.0:
+            return x
+        keep_prob = 1.0 - self.p
+        mask = x.new_empty(x.size(0), 1, x.size(2)).bernoulli_(keep_prob)
+        mask = mask.div_(keep_prob)
+        return x * mask
+
+
 class AsterBlock(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super().__init__()
@@ -184,6 +198,7 @@ class CRNNConfig:
     layer5_blocks: int = 3
     use_rnn_skip: bool = False
     aux_ctc_weight: float = 0.0
+    use_locked_dropout: bool = False
     dropout: float = 0.1
 
 
@@ -208,7 +223,7 @@ class CRNN(nn.Module):
         if config.aux_ctc_weight > 0.0:
             self.aux_classifier = nn.Linear(self.encoder.rnn_input_dim, num_classes)
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
-        self.dropout = nn.Dropout(config.dropout)
+        self.dropout = LockedDropout(config.dropout) if config.use_locked_dropout else nn.Dropout(config.dropout)
         self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
 
     def forward_features(self, images):
@@ -332,6 +347,7 @@ LSTM_PROJ_SIZE = env_int("LSTM_PROJ_SIZE", 0)
 LAYER5_BLOCKS = env_int("LAYER5_BLOCKS", 3)
 USE_RNN_SKIP = env_bool("USE_RNN_SKIP", False)
 AUX_CTC_WEIGHT = env_float("AUX_CTC_WEIGHT", 0.0)
+USE_LOCKED_DROPOUT = env_bool("USE_LOCKED_DROPOUT", False)
 DROPOUT = env_float("DROPOUT", 0.1)
 
 # Misc
@@ -369,6 +385,7 @@ config = CRNNConfig(
     layer5_blocks=LAYER5_BLOCKS,
     use_rnn_skip=USE_RNN_SKIP,
     aux_ctc_weight=AUX_CTC_WEIGHT,
+    use_locked_dropout=USE_LOCKED_DROPOUT,
     dropout=DROPOUT,
 )
 
