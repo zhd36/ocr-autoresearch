@@ -181,6 +181,7 @@ class CRNNConfig:
     rnn_input_dim: int = 512
     lstm_proj_size: int = 0
     use_rnn_skip: bool = False
+    aux_ctc_weight: float = 0.0
     dropout: float = 0.1
 
 
@@ -200,17 +201,30 @@ class CRNN(nn.Module):
         self.rnn_skip = None
         if config.use_rnn_skip:
             self.rnn_skip = nn.Linear(self.encoder.rnn_input_dim, self.encoder.out_channels)
+        self.aux_classifier = None
+        if config.aux_ctc_weight > 0.0:
+            self.aux_classifier = nn.Linear(self.encoder.rnn_input_dim, num_classes)
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
         self.dropout = nn.Dropout(config.dropout)
         self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
 
-    def forward(self, images):
+    def forward_features(self, images):
         sequence = self.encoder.encode_sequence(images)
         x, _ = self.encoder.rnn(sequence)
         if self.rnn_skip is not None:
             x = x + self.rnn_skip(sequence)
         x = self.sequence_norm(x)
         x = self.dropout(x)
+        return sequence, x
+
+    def forward_with_aux(self, images):
+        sequence, x = self.forward_features(images)
+        logits = self.classifier(x)
+        aux_logits = self.aux_classifier(sequence) if self.aux_classifier is not None else None
+        return logits, aux_logits
+
+    def forward(self, images):
+        _, x = self.forward_features(images)
         logits = self.classifier(x)
         return logits
 
@@ -313,6 +327,7 @@ LAYER2_WIDTH_STRIDE = env_int("LAYER2_WIDTH_STRIDE", 2)
 RNN_INPUT_DIM = env_int("RNN_INPUT_DIM", 512)
 LSTM_PROJ_SIZE = env_int("LSTM_PROJ_SIZE", 0)
 USE_RNN_SKIP = env_bool("USE_RNN_SKIP", False)
+AUX_CTC_WEIGHT = env_float("AUX_CTC_WEIGHT", 0.0)
 DROPOUT = env_float("DROPOUT", 0.1)
 
 # Misc
@@ -348,6 +363,7 @@ config = CRNNConfig(
     rnn_input_dim=RNN_INPUT_DIM,
     lstm_proj_size=LSTM_PROJ_SIZE,
     use_rnn_skip=USE_RNN_SKIP,
+    aux_ctc_weight=AUX_CTC_WEIGHT,
     dropout=DROPOUT,
 )
 
@@ -381,7 +397,7 @@ print(
     f"total_batch={TOTAL_BATCH_SIZE}, device_batch={DEVICE_BATCH_SIZE}, "
     f"eval_batch={EVAL_BATCH_SIZE}, lr={LR}, weight_decay={WEIGHT_DECAY}, "
     f"betas={BETAS}, warmup_ratio={WARMUP_RATIO}, final_lr_frac={FINAL_LR_FRAC}, "
-    f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}"
+    f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, aux_ctc_weight={AUX_CTC_WEIGHT}"
 )
 
 
@@ -414,8 +430,13 @@ while True:
         target_lengths = target_lengths.to(device, non_blocking=True)
 
         with autocast_ctx:
-            logits = model(images)
-            loss = ctc_loss(logits, flat_targets, target_lengths)
+            if AUX_CTC_WEIGHT > 0.0:
+                logits, aux_logits = model.forward_with_aux(images)
+                loss = ctc_loss(logits, flat_targets, target_lengths)
+                loss = loss + AUX_CTC_WEIGHT * ctc_loss(aux_logits, flat_targets, target_lengths)
+            else:
+                logits = model(images)
+                loss = ctc_loss(logits, flat_targets, target_lengths)
 
         train_loss_value = loss.detach().item()
         scaled_loss = loss / grad_accum_steps
