@@ -149,30 +149,12 @@ class CRNN(nn.Module):
             lstm_layers=config.lstm_layers,
         )
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
-        self.temporal_refine = nn.Sequential(
-            nn.Conv1d(
-                self.encoder.out_channels,
-                self.encoder.out_channels,
-                kernel_size=3,
-                padding=1,
-                groups=self.encoder.out_channels,
-                bias=False,
-            ),
-            nn.GELU(),
-            nn.Conv1d(
-                self.encoder.out_channels,
-                self.encoder.out_channels,
-                kernel_size=1,
-                bias=False,
-            ),
-        )
         self.dropout = nn.Dropout(config.dropout)
         self.classifier = nn.Linear(self.encoder.out_channels, num_classes)
 
     def forward(self, images):
         x = self.encoder(images)
         x = self.sequence_norm(x)
-        x = x + self.temporal_refine(x.transpose(1, 2)).transpose(1, 2)
         x = self.dropout(x)
         logits = self.classifier(x)
         return logits
