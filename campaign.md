@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 83
-- Next round index: 84
+- Current logged rounds: 84
+- Next round index: 85
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -609,3 +609,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: increasing hidden-state size behind an LSTM projection does not improve this regime. The projected wide LSTM pays extra recurrent cost without producing a better usable sequence representation than the plain visible-width `512` layer.
 - Evidence: strong. Parameters rise to `19.3M`, steps fall to `4016`, and CER regresses materially.
 - Next action: stop spending rounds on more elaborate recurrent geometry. The next promising way to use the fixed budget better is to accelerate alignment learning directly, for example with an auxiliary CTC head on the pre-RNN sequence.
+
+### Round 84 - `22e9a8e` - add auxiliary CTC supervision
+
+- Result: `val_cer=0.776451`, `word_acc=0.098253`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.157424` CER worse
+- Keypoint: auxiliary supervision at the pre-RNN sequence is actively harmful here. Instead of accelerating useful alignment learning, it splits the optimization target across two representation levels that apparently want different invariances.
+- Evidence: decisive. Step count stays healthy, yet CER collapses badly, so this is not a simple budget issue.
+- Next action: stop pursuing deep supervision on this backbone. The next worthwhile test is to revisit a wider two-layer LSTM under the now-correct optimizer, because the older negative result on wider recurrent heads was measured in a materially different regime.
