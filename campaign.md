@@ -153,3 +153,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: encoder-side channel reweighting is strongly beneficial. This confirms that the model was not mainly lacking head complexity; it was lacking better feature selection before the sequence model/classifier consumed the representation.
 - Evidence: very clear. CER and word accuracy both improve substantially with only a small parameter increase and no meaningful memory change.
 - Next action: keep SE as the new base and continue exploring encoder-side structural refinements that complement it, rather than adding more head-side complexity.
+
+### Round 27 - `ee25656` - SiLU activations in encoder
+
+- Result: `val_cer=0.766212`, `word_acc=0.067686`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `cbf0971`: `+0.052475` CER worse
+- Keypoint: smoother activations did not complement the new SE-equipped encoder; they degraded the proven feature pipeline substantially. The useful encoder improvement appears to be selective channel emphasis, not a broad nonlinearity swap.
+- Evidence: very clear. CER regresses heavily with no compensating gain elsewhere.
+- Next action: revert to ReLU and stay focused on feature conditioning, testing another normalization point before the recurrent stack rather than changing the encoder's whole activation regime.
