@@ -24,3 +24,4 @@ e930dc0	0.781143	0.037118	3.4	discard	shorter beta2
 7192ce2	0.732509	0.069869	3.4	keep	sequence LayerNorm before classifier
 6435adc	0.773891	0.054585	3.4	discard	residual temporal refine after LayerNorm
 818e0ed	0.765358	0.074236	3.4	discard	residual MLP head after LayerNorm
+cbf0971	0.713737	0.087336	3.4	keep	add SE channel attention to Aster blocks

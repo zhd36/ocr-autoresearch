@@ -13,10 +13,10 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 
 ## Current Best Result
 
-- Commit: `7192ce2`
-- Description: `sequence LayerNorm before classifier`
-- `val_cer`: `0.732509`
-- `word_acc`: `0.069869`
+- Commit: `cbf0971`
+- Description: `add SE channel attention to Aster blocks`
+- `val_cer`: `0.713737`
+- `word_acc`: `0.087336`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -145,3 +145,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: a richer pointwise head again improves word-level exact matches while hurting CER, which suggests the added head capacity is helping confident easy predictions without improving fine-grained character alignment. The useful signal from LayerNorm is therefore conditioning, not “make the head deeper.”
 - Evidence: clear. CER worsens materially even though word accuracy reaches a new local high.
 - Next action: move the next structural change upstream into the encoder with lightweight channel attention, because head-side complexity is no longer matching the main metric.
+
+### Round 26 - `cbf0971` - add SE channel attention to Aster blocks
+
+- Result: `val_cer=0.713737`, `word_acc=0.087336`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `7192ce2`: `-0.018772` CER better
+- Keypoint: encoder-side channel reweighting is strongly beneficial. This confirms that the model was not mainly lacking head complexity; it was lacking better feature selection before the sequence model/classifier consumed the representation.
+- Evidence: very clear. CER and word accuracy both improve substantially with only a small parameter increase and no meaningful memory change.
+- Next action: keep SE as the new base and continue exploring encoder-side structural refinements that complement it, rather than adding more head-side complexity.
