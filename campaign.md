@@ -337,3 +337,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new low-LR regime benefits from a slightly longer second-moment memory. That means the remaining noise is not from under-updating; it is from overly reactive adaptive scaling.
 - Evidence: good but smaller than the earlier LR gains. The improvement is real on both CER and word accuracy, though now the increments are tighter.
 - Next action: bracket the upper side of `beta2` next, because the signal points toward smoother adaptation, but we still need to know where it starts becoming too inert for a 5-minute budget.
+
+### Round 50 - `fe3e291` - even higher beta2
+
+- Result: `val_cer=0.652730`, `word_acc=0.144105`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `d94fa70`: `+0.005972` CER worse
+- Keypoint: `beta2=0.999` is past the useful smoothing point. It increases word-level exact matches further, but slightly oversmooths the adaptive scaling and gives back character-level precision.
+- Evidence: clear enough to stop this bracket. `0.995` now looks like the center of the useful range.
+- Next action: stop micro-tuning `beta2` and test EMA next, because the current pattern suggests evaluation-time parameter smoothing may help without further slowing online adaptation.
