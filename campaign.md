@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 82
-- Next round index: 83
+- Current logged rounds: 83
+- Next round index: 84
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -601,3 +601,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the one-layer `512` head is not bottlenecked by excessive input dimensionality. It needs the full 512-dimensional conditioned encoder sequence; compressing that interface before the LSTM destroys the representation even when step count stays unchanged.
 - Evidence: decisive. `num_steps` remains at `4214`, so the collapse is purely representational rather than an optimization-budget issue.
 - Next action: stop compressing the encoder-to-LSTM interface. The next stronger hypothesis is to keep the good `512` output width but increase internal recurrent state with LSTM projection, so capacity rises without repeating the failed “just widen the visible output” move.
+
+### Round 83 - `3a5bd54` - projected wide one-layer LSTM
+
+- Result: `val_cer=0.656143`, `word_acc=0.148472`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `10b4225`: `+0.037116` CER worse
+- Keypoint: increasing hidden-state size behind an LSTM projection does not improve this regime. The projected wide LSTM pays extra recurrent cost without producing a better usable sequence representation than the plain visible-width `512` layer.
+- Evidence: strong. Parameters rise to `19.3M`, steps fall to `4016`, and CER regresses materially.
+- Next action: stop spending rounds on more elaborate recurrent geometry. The next promising way to use the fixed budget better is to accelerate alignment learning directly, for example with an auxiliary CTC head on the pre-RNN sequence.
