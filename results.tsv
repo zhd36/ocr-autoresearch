@@ -56,3 +56,4 @@ db9b06d	0.666809	0.117904	3.4	discard	tiny weight decay on conditioned backbone
 066f31e	0.651451	0.152838	3.4	discard	lower beta1 bracket
 2bfc6e3	0.673635	0.128821	3.4	discard	tighter grad clip on conditioned backbone
 a9ee9eb	0.750853	0.100437	3.4	discard	larger batch on conditioned backbone
+252a617	0.661263	0.122271	3.4	discard	smaller batch on conditioned backbone

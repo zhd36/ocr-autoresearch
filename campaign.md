@@ -401,3 +401,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: in the current regime, more parameter updates matter much more than lower gradient noise from larger batches. Even though sample throughput rises, losing optimizer steps is catastrophic.
 - Evidence: decisive. This is a large regression despite higher samples seen.
 - Next action: test the opposite side next. With the new optimizer settings, a somewhat smaller batch may finally be worthwhile because it buys more updates without the old instability.
+
+### Round 58 - `252a617` - smaller batch on conditioned backbone
+
+- Result: `val_cer=0.661263`, `word_acc=0.122271`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `34fa0bd`: `+0.019625` CER worse
+- Keypoint: the batch-size optimum really is local around `32` even in the new regime. Extra optimizer steps from `batch=24` do not overcome the added stochasticity.
+- Evidence: clear. This is worse than the current best by a useful margin, and together with Round 57 it brackets the batch optimum well.
+- Next action: stop spending rounds on batch size and return to the momentum interaction that is still paying off, especially the possibility that `beta1=0.85` may pair best with a slightly higher `beta2`.
