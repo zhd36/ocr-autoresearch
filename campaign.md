@@ -297,3 +297,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new backbone still prefers even gentler updates. Lowering LR again to `4.5e-4` gives another substantial jump, so the critical insight now is that architectural conditioning shifted the whole optimization sweet spot downward.
 - Evidence: extremely clear. CER and word accuracy both improve strongly again.
 - Next action: continue a tight optimizer bracket around this region, starting with `4e-4`, before resuming broader structural exploration.
+
+### Round 45 - `fd7ffef` - lower lr further
+
+- Result: `val_cer=0.673208`, `word_acc=0.131004`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `ee39e2e`: `+0.024744` CER worse
+- Keypoint: the LR sweet spot has a real floor. Dropping to `4e-4` loses too much optimization speed, so the earlier gains were not from “lower is always better,” but from moving into a narrower optimum around `4.5e-4`.
+- Evidence: clear. This is meaningfully worse than the current best while keeping strong word accuracy.
+- Next action: stop pushing base LR downward and instead test the decay shape around the now-plausible optimum, starting with a lower final LR floor.
