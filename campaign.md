@@ -417,3 +417,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the optimizer still had real headroom. On the strengthened backbone, `beta1=0.85` wants a second-moment estimate that is smoother than `0.995` but not as sluggish as `0.999`. The useful regime is narrower and more delayed than the older optimizer searches suggested.
 - Evidence: strong. CER improves meaningfully and word accuracy also rises, so this is not a tradeoff win; it is a cleaner optimizer match.
 - Next action: stay in this neighborhood for one more bracket step. Test whether the gain peaks around `beta2=0.997` or still climbs slightly higher, starting with `0.998`.
+
+### Round 60 - `5f1c9ca` - beta2 bracket above new best
+
+- Result: `val_cer=0.622014`, `word_acc=0.159389`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `76f9bbb`: `-0.012798` CER better
+- Keypoint: the previous optimizer search was materially under-smoothed for this backbone. The conditioned encoder is producing useful but still bursty gradients, and a much slower second-moment estimate is helping scale those updates cleanly while `beta1=0.85` preserves enough short-horizon responsiveness.
+- Evidence: very strong. Both CER and word accuracy improve sharply again, which means this is not a fragile metric trade; it is a broad optimization improvement.
+- Next action: keep pushing until the curve clearly turns. The immediate next test should be `beta2=0.999` with the same `beta1=0.85` to see whether the optimum has moved all the way to the upper edge or peaks just below it.
