@@ -409,3 +409,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the batch-size optimum really is local around `32` even in the new regime. Extra optimizer steps from `batch=24` do not overcome the added stochasticity.
 - Evidence: clear. This is worse than the current best by a useful margin, and together with Round 57 it brackets the batch optimum well.
 - Next action: stop spending rounds on batch size and return to the momentum interaction that is still paying off, especially the possibility that `beta1=0.85` may pair best with a slightly higher `beta2`.
+
+### Round 59 - `76f9bbb` - higher beta2 with lower beta1
+
+- Result: `val_cer=0.634812`, `word_acc=0.144105`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `34fa0bd`: `-0.006826` CER better
+- Keypoint: the optimizer still had real headroom. On the strengthened backbone, `beta1=0.85` wants a second-moment estimate that is smoother than `0.995` but not as sluggish as `0.999`. The useful regime is narrower and more delayed than the older optimizer searches suggested.
+- Evidence: strong. CER improves meaningfully and word accuracy also rises, so this is not a tradeoff win; it is a cleaner optimizer match.
+- Next action: stay in this neighborhood for one more bracket step. Test whether the gain peaks around `beta2=0.997` or still climbs slightly higher, starting with `0.998`.
