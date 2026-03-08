@@ -537,3 +537,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the failure mode of the 64-step model is not just raw compute. Even after shrinking the recurrent width, the longer sequence remains much harder to optimize in this budget, and the weaker recurrent head compounds the problem instead of balancing it.
 - Evidence: decisive. `num_steps` falls further to `2677`, loss stays extremely high, and recognition quality nearly collapses.
 - Next action: stop prioritizing longer encoder sequences for now. The next higher-value structure test is the opposite efficiency move: simplify the recurrent stack itself and see whether the saved budget can be converted into better fitting on the proven 32-step backbone.
+
+### Round 75 - `f934290` - shallower recurrent stack
+
+- Result: `val_cer=0.692833`, `word_acc=0.122271`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.070819` CER worse
+- Keypoint: the second recurrent layer is buying more than it costs. A one-layer bidirectional LSTM does train faster and sees more samples, but the lost sequence-modeling depth hurts character accuracy more than the extra optimization steps help.
+- Evidence: strong. `num_steps` rises to `4404`, yet CER still regresses heavily, so the gap is not a throughput problem.
+- Next action: do not abandon the depth-vs-efficiency trade yet. The next meaningful test is a wider one-layer LSTM, using the saved compute to recover expressive capacity without going back to two recurrent layers.
