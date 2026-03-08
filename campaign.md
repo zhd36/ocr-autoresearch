@@ -113,3 +113,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: shortening AdamW's second-moment timescale to `beta2=0.95` does not help this model exploit the 5-minute budget; it destabilizes enough to wipe out the hoped-for faster adaptation.
 - Evidence: clear. The regression is large, and together with the earlier LR/dropout failures it suggests the current scalar optimization settings are already near a local optimum.
 - Next action: stop pure hyperparameter search and switch to model-structure experiments, starting with a bidirectional GRU head that may trade some recurrent expressivity for more training speed under the fixed wall-clock budget.
+
+### Round 22 - `1dfba6b` - GRU head instead of LSTM
+
+- Result: `val_cer=0.772184`, `word_acc=0.030568`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.017491` CER worse
+- Keypoint: replacing the bidirectional LSTM with a bidirectional GRU reduced parameters (`16.2M -> 15.4M`) but did not increase useful throughput enough to matter, and the weaker sequence model hurt recognition quality. This task seems more sensitive to recurrent expressivity than to that small parameter reduction.
+- Evidence: clear. CER drops materially, word accuracy drops, and step count did not improve enough to justify the trade.
+- Next action: keep the LSTM backbone and try a lower-risk structural refinement on top of it, starting with a sequence `LayerNorm` before the classifier to improve feature conditioning without weakening temporal modeling.
