@@ -65,3 +65,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: adding `weight_decay=1e-4` improved exact-match word accuracy but hurt character error. The most likely explanation is that this amount of regularization nudges predictions toward cleaner all-or-nothing strings on easier samples while reducing fine-grained character fitting under the tight 5-minute budget.
 - Evidence: moderately clear. The CER regression is too large to keep, but the word-accuracy gain suggests the regularization direction itself may still be viable at a weaker setting.
 - Next action: try a smaller `weight_decay=5e-5` to see whether the word-level gain can be retained without paying as much CER cost.
+
+### Round 16 - `41bad42` - lighter weight decay
+
+- Result: `val_cer=0.774744`, `word_acc=0.050218`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `a84f80a`: `+0.020051` CER worse
+- Keypoint: reducing weight decay did not recover the CER loss. The direction itself appears mismatched to this short-budget setting: regularization is consuming fitting capacity faster than it buys useful generalization.
+- Evidence: clear. Two consecutive weight-decay settings both miss the best by a meaningful margin, and the lighter setting gets even worse CER.
+- Next action: stop exploring weight decay and move to base learning-rate tuning at the proven `batch=32`, since optimization speed is now a more plausible bottleneck than overfitting.
