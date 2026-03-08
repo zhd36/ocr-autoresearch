@@ -194,8 +194,8 @@ def get_lr(progress):
 # ---------------------------------------------------------------------------
 
 # Optimization
-TOTAL_BATCH_SIZE = 16
-DEVICE_BATCH_SIZE = 16
+TOTAL_BATCH_SIZE = 32
+DEVICE_BATCH_SIZE = 32
 EVAL_BATCH_SIZE = 128
 LR = 6e-4
 WEIGHT_DECAY = 0.0
