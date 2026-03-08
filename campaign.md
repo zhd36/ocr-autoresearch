@@ -481,3 +481,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: plain `fp16` AMP is not a free speed win here; it is numerically harmful for this CTC training loop. The run gets almost no throughput benefit, while the optimization quality collapses badly.
 - Evidence: decisive. `num_steps` and `samples_seen` are essentially unchanged from the fp32 best, but loss stays very high and both CER and word accuracy collapse.
 - Next action: stop treating generic AMP as a likely improvement. If mixed precision is worth revisiting at all, it should be with `bfloat16` rather than `float16`; otherwise the more promising path is to search elsewhere.
+
+### Round 68 - `c2aec4b` - enable bf16 amp
+
+- Result: `val_cer=0.750000`, `word_acc=0.076419`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `5f1c9ca`: `+0.127986` CER worse
+- Keypoint: mixed precision is broadly the wrong direction for this setup, not just `fp16` specifically. `bfloat16` avoids the worst numerical collapse, but it still does not improve throughput and still degrades optimization badly enough to lose a large amount of CER.
+- Evidence: strong. The run remains near baseline step count and sample count, but the loss is far above the fp32 best and final recognition quality is much worse.
+- Next action: close the mixed-precision branch and return to simpler underfit-oriented changes. The next likely win is to revisit regularization under the now-correct optimizer, especially whether classifier dropout is still helping at all.
