@@ -241,3 +241,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the success of early encoder attention does not mean “put SE everywhere as early as possible.” A single hard gate on the stem output is harmful; the useful behavior seems to come from progressive channel reweighting inside residual feature extraction blocks.
 - Evidence: clear. CER regresses heavily with only a tiny parameter change.
 - Next action: keep the early-encoder focus, but change the form of the intervention. The next experiment should strengthen stem feature extraction itself rather than gating it.
+
+### Round 38 - `088183d` - deeper two-conv stem
+
+- Result: `val_cer=0.755546`, `word_acc=0.078603`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `fe69bc3`: `+0.080205` CER worse
+- Keypoint: strengthening the stem is less harmful than gating it, but still clearly inferior to the current base. The current early pipeline is already good enough once the downstream SE, GroupNorm, and dual LayerNorm structure is in place.
+- Evidence: clear. This remains well short of the best run despite only a modest parameter increase.
+- Next action: keep the stem simple and refocus future experiments on more targeted mid/late encoder conditioning rather than broad early-front-end changes.
