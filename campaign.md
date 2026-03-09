@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 103
-- Next round index: 104
+- Current logged rounds: 104
+- Next round index: 105
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -769,3 +769,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the old blank-bias signal does not revive strongly on the new one-layer wide head. It is less harmful than the recent classifier-geometry and gating ideas, which means the mechanism is still real, but the stronger representation and higher dropout have already absorbed most of the alignment benefit.
 - Evidence: fairly strong. The run is clearly worse than the best despite staying healthy and parameter-neutral.
 - Next action: close this four-round head-side batch and push it. The next experiments should move away from classifier-interface tweaks and look for a more central structural gain inside the sequence model or encoder-to-sequence transition.
+
+### Round 104 - `fa03235` - deepen late encoder on stable one-layer head
+
+- Result: `val_cer=0.694539`, `word_acc=0.122271`, `memory_gb=3.5`, `status=discard`
+- Delta vs best `763771d`: `+0.095136` CER worse
+- Keypoint: the late visual stack is already at its local optimum. Since reducing `layer5` to `2` blocks was harmful and increasing it to `4` is even worse, the useful late encoder abstraction is clearly not monotonic with depth under the 5-minute budget.
+- Evidence: decisive. Parameters rise to `20.3M` and CER collapses without any compensating word-accuracy gain.
+- Next action: stop searching layer5 depth in either direction. The next coherent structural question is inside the recurrent stack itself: test a middle point between the old `2x256` and the new `1x512`, such as a `2-layer, hidden=320` compromise.
