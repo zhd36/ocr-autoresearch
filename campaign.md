@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 109
-- Next round index: 110
+- Current logged rounds: 110
+- Next round index: 111
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -817,3 +817,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the main bottleneck was training-dynamics mismatch, not missing model capacity. Starting from the more stable `dropout=0.2` regime and only ramping to `0.25` later captures the big regularization gain without paying the early alignment penalty that made the static high-dropout setup brittle.
 - Evidence: very strong. This is a large CER improvement with a simultaneous jump in word accuracy, and compute remains essentially unchanged.
 - Next action: stay on this line immediately, but do not scatter. The next most informative move is a reproducibility check of the exact new schedule before broader bracketing, because earlier static high-dropout gains were noisy and this result is large enough to justify verification.
+
+### Round 110 - `c83829e` - reproducibility check for dropout schedule best
+
+- Result: `val_cer=0.620734`, `word_acc=0.131004`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.061007` CER worse
+- Keypoint: the schedule breakthrough is real, but not yet fully stabilized. Re-running the exact same `0.2 -> 0.25` schedule remains much stronger than many recent architectural detours, yet it still shows enough variance that the new best cannot be treated as a fully solved regime.
+- Evidence: useful and credible. This is a meaningful regression, but it stays in a much healthier band than the old static-high-dropout failures.
+- Next action: do not abandon the schedule line. The next best move is to combine it with an early-only blank-logit offset, because the remaining variance most likely lives in early alignment rather than in late regularization strength.
