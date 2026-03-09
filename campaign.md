@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 104
-- Next round index: 105
+- Current logged rounds: 105
+- Next round index: 106
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -777,3 +777,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the late visual stack is already at its local optimum. Since reducing `layer5` to `2` blocks was harmful and increasing it to `4` is even worse, the useful late encoder abstraction is clearly not monotonic with depth under the 5-minute budget.
 - Evidence: decisive. Parameters rise to `20.3M` and CER collapses without any compensating word-accuracy gain.
 - Next action: stop searching layer5 depth in either direction. The next coherent structural question is inside the recurrent stack itself: test a middle point between the old `2x256` and the new `1x512`, such as a `2-layer, hidden=320` compromise.
+
+### Round 105 - `f747e97` - two-layer recurrent compromise on stable head
+
+- Result: `val_cer=0.640785`, `word_acc=0.128821`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.041382` CER worse
+- Keypoint: some extra sequence depth can still be competitive, but a full second LSTM layer spends too much of the 5-minute budget on recurrent compute. The result is much better than the recent bad head-side ideas, yet the step count drops all the way to `2944`, which leaves too little room for fitting.
+- Evidence: useful and fairly clear. This is not a catastrophic miss, but it does show that the one-layer advantage is strongly tied to throughput.
+- Next action: keep the sequence-depth hypothesis alive in a cheaper form. The next best test is a lightweight residual temporal refinement block on top of the one-layer `512` head, aiming to recover some extra sequence processing without paying full recurrent-layer cost.
