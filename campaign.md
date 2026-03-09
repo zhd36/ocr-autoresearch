@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 107
-- Next round index: 108
+- Current logged rounds: 108
+- Next round index: 109
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -801,3 +801,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the recurrent-compromise line has collapsed. Shrinking the two-layer stack to recover throughput does not preserve the modest signal seen at `2x320`; it instead removes too much sequence capacity while still paying the depth cost, leaving this regime clearly dominated by the `1-layer, hidden=512` design.
 - Evidence: decisive. Both CER and word accuracy collapse, so this is not just a noisy underfit run.
 - Next action: close the current 104-107 batch and push it. The next experiments should treat `1-layer, hidden=512` as locked and search elsewhere rather than revisiting deeper recurrent compromises.
+
+### Round 108 - `c90e277` - linearly ramp dropout to high regime
+
+- Result: `val_cer=0.632679`, `word_acc=0.141921`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.033276` CER worse
+- Keypoint: dropout timing does matter. A linear ramp from `0.1` to `0.25` is clearly healthier than the recent failed structural detours, which means the brittle high-dropout regime is at least partly a training-dynamics problem rather than a pure lucky scalar peak.
+- Evidence: useful and credible. This still misses the best by a visible margin, but it is much closer than the recent head-side or recurrent-compromise experiments.
+- Next action: keep the schedule hypothesis alive and move the start point upward. The next most justified test is `0.2 -> 0.25`, preserving the stronger early regularization of the stable regime while still chasing the late high-dropout benefit.
