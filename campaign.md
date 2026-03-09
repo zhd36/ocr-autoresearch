@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 110
-- Next round index: 111
+- Current logged rounds: 111
+- Next round index: 112
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -825,3 +825,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the schedule breakthrough is real, but not yet fully stabilized. Re-running the exact same `0.2 -> 0.25` schedule remains much stronger than many recent architectural detours, yet it still shows enough variance that the new best cannot be treated as a fully solved regime.
 - Evidence: useful and credible. This is a meaningful regression, but it stays in a much healthier band than the old static-high-dropout failures.
 - Next action: do not abandon the schedule line. The next best move is to combine it with an early-only blank-logit offset, because the remaining variance most likely lives in early alignment rather than in late regularization strength.
+
+### Round 111 - `025cf28` - combine dropout schedule with early blank offset
+
+- Result: `val_cer=0.634386`, `word_acc=0.146288`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.074659` CER worse
+- Keypoint: once the dropout schedule is corrected, extra early blank suppression is no longer complementary. The schedule already appears to solve enough of the early-alignment problem that adding a strong blank offset just overconstrains the path distribution and gives back the gain.
+- Evidence: strong. This run is healthy and throughput even rises slightly, yet CER clearly regresses.
+- Next action: lock the schedule insight by itself and stop stacking blank-control tricks on top. After pushing this 4-round batch, the next decision is whether to exploit the new dynamics under the same 5-minute budget or follow the user suggestion and test the new best schedule with a 10-minute budget.
