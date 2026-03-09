@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 115
-- Next round index: 116
+- Current logged rounds: 117
+- Next round index: 118
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -865,3 +865,19 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the new schedule best is not primarily limited by second-moment noise. Even though `beta2=0.9985` previously helped the static `dropout=0.25` corner, it does not transfer to the scheduled regime, which means the remaining variance is more likely about the regularization path itself than about optimizer smoothing.
 - Evidence: fairly strong. Compute and throughput stay normal, but the result falls back into the same middling band as other non-best schedule variants.
 - Next action: return to schedule bracketing rather than optimizer tweaks. The next most informative move is a narrow endpoint increase, such as a linear `0.2 -> 0.275`, to test whether the true scheduled optimum sits above `0.25`.
+
+### Round 116 - `7a1e186` - widen scheduled dropout endpoint
+
+- Result: `val_cer=0.642065`, `word_acc=0.117904`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.082338` CER worse
+- Keypoint: the scheduled optimum does not sit above `0.25` in any useful way. Raising the endpoint to `0.275` causes a sharp regression, so the big Round 109 gain was not just a sign that "more late dropout is better."
+- Evidence: strong. Quality falls back decisively, and this is not a near-miss bracket.
+- Next action: stop pushing the endpoint upward. A more plausible remaining shape hypothesis is that the ramp should start a little later without changing the final target, because linear may still be slightly too early while the high endpoint itself appears correct.
+
+### Round 117 - `5b52302` - delayed ramp for dropout schedule
+
+- Result: `val_cer=0.641638`, `word_acc=0.144105`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.081911` CER worse
+- Keypoint: a long hold at `dropout=0.2` also does not recover the best regime. Delaying the ramp until `40%` of the budget leaves the model too close to the plain stable-dropout behavior for too long, so the later increase cannot make up the lost regularization path.
+- Evidence: strong. This lands in essentially the same poor band as the widened-endpoint run.
+- Next action: treat the simple linear `0.2 -> 0.25` schedule as the current best shape. After pushing this batch, the next rational move is a much smaller timing refinement, such as a short early hold before the same linear ramp, rather than more aggressive shape changes.
