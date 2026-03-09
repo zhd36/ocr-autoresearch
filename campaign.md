@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 112
-- Next round index: 113
+- Current logged rounds: 113
+- Next round index: 114
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -841,3 +841,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: more training time is not automatically helpful in this regime. Reusing the 5-minute-optimal `0.2 -> 0.25` schedule for 10 minutes leads to a clearly worse result, which implies the model overfits or over-sharpens unless the regularization schedule is strengthened for the longer horizon.
 - Evidence: strong. The run is healthy and doubles exposure (`268.6K` samples, `8394` steps), yet validation quality regresses.
 - Next action: if continuing on the 10-minute branch, retune the schedule rather than assuming duration alone helps. The most coherent next test is a stronger late-dropout endpoint, such as `0.2 -> 0.3`, under the same 10-minute budget.
+
+### Round 113 - `411eec7` - strengthen late dropout on 10-minute schedule
+
+- Result: `val_cer=0.589590`, `word_acc=0.152838`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.029863` CER worse
+- Keypoint: the 10-minute branch is viable only with stronger late regularization. Raising the endpoint to `dropout=0.3` recovers most of the loss from Round 112, which confirms that longer training primarily changes the regularization optimum rather than making the original 5-minute schedule obsolete.
+- Evidence: useful and fairly strong. This is a large recovery relative to Round 112, but it still does not beat the 5-minute schedule best.
+- Next action: keep the 10-minute branch as a secondary line rather than the new default. The global best still comes from the 5-minute `0.2 -> 0.25` schedule, so the next experiments should either stabilize that line further or continue 10-minute tuning only if there is a principled next regularization move.
