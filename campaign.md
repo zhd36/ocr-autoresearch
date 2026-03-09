@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 114
-- Next round index: 115
+- Current logged rounds: 115
+- Next round index: 116
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -857,3 +857,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the schedule win is not simply "push the strong dropout later." A quadratic backloaded ramp behaves more like the stable `dropout=0.2` regime and fails to recover the sharp gain from the linear `0.2 -> 0.25` schedule, which implies that the model benefits from a steadier buildup of regularization across the whole 5-minute horizon.
 - Evidence: fairly strong. Throughput is healthy and this result lands in a familiar middling band rather than near the best.
 - Next action: stop pushing the schedule later in time. The most justified next test is optimizer-side stabilization, especially `beta2=0.9985`, because that was the only previous lever that helped the brittle high-dropout regime without changing the model.
+
+### Round 115 - `4f9d6b9` - stabilize dropout schedule with slower beta2
+
+- Result: `val_cer=0.625000`, `word_acc=0.150655`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.065273` CER worse
+- Keypoint: the new schedule best is not primarily limited by second-moment noise. Even though `beta2=0.9985` previously helped the static `dropout=0.25` corner, it does not transfer to the scheduled regime, which means the remaining variance is more likely about the regularization path itself than about optimizer smoothing.
+- Evidence: fairly strong. Compute and throughput stay normal, but the result falls back into the same middling band as other non-best schedule variants.
+- Next action: return to schedule bracketing rather than optimizer tweaks. The next most informative move is a narrow endpoint increase, such as a linear `0.2 -> 0.275`, to test whether the true scheduled optimum sits above `0.25`.

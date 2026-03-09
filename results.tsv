@@ -112,3 +112,4 @@ c83829e	0.620734	0.131004	3.4	discard	reproducibility check for dropout schedule
 0d57c0a	0.625853	0.141921	3.4	discard	extend best dropout schedule to 10-minute budget
 411eec7	0.589590	0.152838	3.4	discard	strengthen late dropout on 10-minute schedule
 c304a8a	0.618174	0.155022	3.4	discard	backload best dropout schedule
+4f9d6b9	0.625000	0.150655	3.4	discard	stabilize dropout schedule with slower beta2
