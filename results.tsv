@@ -100,3 +100,4 @@ aebe7d7	0.702218	0.117904	3.4	discard	locked dropout on one-layer best
 428475d	0.665102	0.120087	3.4	discard	cosine classifier on stable one-layer head
 f332adb	0.685580	0.120087	3.4	discard	weight-normalized classifier on stable one-layer head
 8b34c89	0.666382	0.128821	3.4	discard	residual head gate on stable one-layer head
+640c697	0.650597	0.122271	3.4	discard	negative blank bias on stable one-layer head

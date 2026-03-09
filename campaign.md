@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 102
-- Next round index: 103
+- Current logged rounds: 103
+- Next round index: 104
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -761,3 +761,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: a learned deterministic channel gate does not recover the benefit of strong classifier-side dropout. Even when the gate is initialized as an identity-like residual modulation, the model does not discover a better channel-selection pattern than the plain normalized LSTM features plus dropout.
 - Evidence: strong. Step count stays reasonably close to baseline (`4047`), so the regression is mostly about representation quality rather than a severe compute tax.
 - Next action: stop adding new head modules for now. The next most justified move is to revisit the CTC blank-alignment interface on the stronger `1-layer, hidden=512` regime, because that was the last head-adjacent mechanism that showed any real signal before the architecture changed.
+
+### Round 103 - `640c697` - negative blank bias on stable one-layer head
+
+- Result: `val_cer=0.650597`, `word_acc=0.122271`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.051194` CER worse
+- Keypoint: the old blank-bias signal does not revive strongly on the new one-layer wide head. It is less harmful than the recent classifier-geometry and gating ideas, which means the mechanism is still real, but the stronger representation and higher dropout have already absorbed most of the alignment benefit.
+- Evidence: fairly strong. The run is clearly worse than the best despite staying healthy and parameter-neutral.
+- Next action: close this four-round head-side batch and push it. The next experiments should move away from classifier-interface tweaks and look for a more central structural gain inside the sequence model or encoder-to-sequence transition.
