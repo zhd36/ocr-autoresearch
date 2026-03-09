@@ -23,7 +23,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from prepare import CODEC_PATH, TIME_BUDGET, OCRCodec, evaluate_cer, make_dataloader, prepare_cache
+from prepare import CODEC_PATH, TIME_BUDGET as DEFAULT_TIME_BUDGET, OCRCodec, evaluate_cer, make_dataloader, prepare_cache
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -480,6 +480,7 @@ DROPOUT_END = env_float("DROPOUT_END", DROPOUT_START)
 # Misc
 SEED = env_int("SEED", 1337)
 USE_AMP = env_bool("USE_AMP", False)
+TRAIN_TIME_BUDGET = env_float("TIME_BUDGET", DEFAULT_TIME_BUDGET)
 
 
 # ---------------------------------------------------------------------------
@@ -549,7 +550,7 @@ scaler = torch.amp.GradScaler("cuda", enabled=True) if USE_AMP and device.type =
 print(f"Device: {device}")
 print(f"Model config: {asdict(config)}")
 print(f"Parameters: {num_params:,}")
-print(f"Time budget: {TIME_BUDGET}s")
+print(f"Time budget: {TRAIN_TIME_BUDGET}s")
 print(f"Gradient accumulation steps: {grad_accum_steps}")
 print(
     "Optimization config: "
@@ -578,7 +579,7 @@ samples_seen = 0
 epoch = 1
 
 while True:
-    progress = min(total_training_time / TIME_BUDGET, 1.0)
+    progress = min(total_training_time / TRAIN_TIME_BUDGET, 1.0)
     lr = get_lr(progress)
     current_dropout = DROPOUT_START + (DROPOUT_END - DROPOUT_START) * progress
     current_blank_logit_offset = BLANK_LOGIT_OFFSET_START + (BLANK_LOGIT_OFFSET_END - BLANK_LOGIT_OFFSET_START) * progress
@@ -637,7 +638,7 @@ while True:
     ema_beta = 0.9
     smooth_loss = ema_beta * smooth_loss + (1.0 - ema_beta) * train_loss_value
     debiased_loss = smooth_loss / (1.0 - ema_beta ** (step + 1))
-    remaining = max(0.0, TIME_BUDGET - total_training_time)
+    remaining = max(0.0, TRAIN_TIME_BUDGET - total_training_time)
     samples_per_sec = TOTAL_BATCH_SIZE / max(dt, 1e-8)
 
     print(
@@ -650,7 +651,7 @@ while True:
     )
 
     step += 1
-    if total_training_time >= TIME_BUDGET:
+    if total_training_time >= TRAIN_TIME_BUDGET:
         break
 
 print()
