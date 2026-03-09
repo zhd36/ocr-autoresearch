@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 113
-- Next round index: 114
+- Current logged rounds: 114
+- Next round index: 115
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -849,3 +849,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the 10-minute branch is viable only with stronger late regularization. Raising the endpoint to `dropout=0.3` recovers most of the loss from Round 112, which confirms that longer training primarily changes the regularization optimum rather than making the original 5-minute schedule obsolete.
 - Evidence: useful and fairly strong. This is a large recovery relative to Round 112, but it still does not beat the 5-minute schedule best.
 - Next action: keep the 10-minute branch as a secondary line rather than the new default. The global best still comes from the 5-minute `0.2 -> 0.25` schedule, so the next experiments should either stabilize that line further or continue 10-minute tuning only if there is a principled next regularization move.
+
+### Round 114 - `c304a8a` - backload best dropout schedule
+
+- Result: `val_cer=0.618174`, `word_acc=0.155022`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.058447` CER worse
+- Keypoint: the schedule win is not simply "push the strong dropout later." A quadratic backloaded ramp behaves more like the stable `dropout=0.2` regime and fails to recover the sharp gain from the linear `0.2 -> 0.25` schedule, which implies that the model benefits from a steadier buildup of regularization across the whole 5-minute horizon.
+- Evidence: fairly strong. Throughput is healthy and this result lands in a familiar middling band rather than near the best.
+- Next action: stop pushing the schedule later in time. The most justified next test is optimizer-side stabilization, especially `beta2=0.9985`, because that was the only previous lever that helped the brittle high-dropout regime without changing the model.
