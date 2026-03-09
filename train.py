@@ -68,6 +68,33 @@ class LockedDropout(nn.Module):
         return x * mask
 
 
+class ResidualTemporalRefine(nn.Module):
+    def __init__(self, channels, kernel_size=3):
+        super().__init__()
+        if kernel_size % 2 == 0:
+            raise ValueError(f"Temporal refine kernel size must be odd, got {kernel_size}")
+        padding = kernel_size // 2
+        self.depthwise = nn.Conv1d(
+            channels,
+            channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            groups=channels,
+            bias=False,
+        )
+        self.activation = nn.GELU()
+        self.pointwise = nn.Conv1d(channels, channels, kernel_size=1, bias=False)
+        nn.init.kaiming_normal_(self.depthwise.weight, mode="fan_out", nonlinearity="relu")
+        nn.init.zeros_(self.pointwise.weight)
+
+    def forward(self, x):
+        y = x.transpose(1, 2)
+        y = self.depthwise(y)
+        y = self.activation(y)
+        y = self.pointwise(y)
+        return x + y.transpose(1, 2)
+
+
 class AsterBlock(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super().__init__()
@@ -203,6 +230,8 @@ class CRNNConfig:
     use_cosine_classifier: bool = False
     use_weight_norm_classifier: bool = False
     use_head_gate: bool = False
+    use_post_rnn_refine: bool = False
+    post_rnn_kernel: int = 3
     blank_logit_bias: float = 0.0
     cosine_scale_init: float = 12.0
     dropout: float = 0.1
@@ -228,6 +257,9 @@ class CRNN(nn.Module):
         self.aux_classifier = None
         if config.aux_ctc_weight > 0.0:
             self.aux_classifier = nn.Linear(self.encoder.rnn_input_dim, num_classes)
+        self.post_rnn_refine = None
+        if config.use_post_rnn_refine:
+            self.post_rnn_refine = ResidualTemporalRefine(self.encoder.out_channels, config.post_rnn_kernel)
         self.sequence_norm = nn.LayerNorm(self.encoder.out_channels)
         self.head_gate = None
         if config.use_head_gate:
@@ -281,6 +313,8 @@ class CRNN(nn.Module):
         x, _ = self.encoder.rnn(sequence)
         if self.rnn_skip is not None:
             x = x + self.rnn_skip(sequence)
+        if self.post_rnn_refine is not None:
+            x = self.post_rnn_refine(x)
         x = self.sequence_norm(x)
         if self.head_gate is not None:
             x = x * (2.0 * self.head_gate(x))
@@ -420,6 +454,8 @@ NUM_DROPOUT_SAMPLES = env_int("NUM_DROPOUT_SAMPLES", 1)
 USE_COSINE_CLASSIFIER = env_bool("USE_COSINE_CLASSIFIER", False)
 USE_WEIGHT_NORM_CLASSIFIER = env_bool("USE_WEIGHT_NORM_CLASSIFIER", False)
 USE_HEAD_GATE = env_bool("USE_HEAD_GATE", False)
+USE_POST_RNN_REFINE = env_bool("USE_POST_RNN_REFINE", False)
+POST_RNN_KERNEL = env_int("POST_RNN_KERNEL", 3)
 BLANK_LOGIT_BIAS = env_float("BLANK_LOGIT_BIAS", 0.0)
 COSINE_SCALE_INIT = env_float("COSINE_SCALE_INIT", 12.0)
 WIDTH_MASK = env_int("WIDTH_MASK", 0)
@@ -466,6 +502,8 @@ config = CRNNConfig(
     use_cosine_classifier=USE_COSINE_CLASSIFIER,
     use_weight_norm_classifier=USE_WEIGHT_NORM_CLASSIFIER,
     use_head_gate=USE_HEAD_GATE,
+    use_post_rnn_refine=USE_POST_RNN_REFINE,
+    post_rnn_kernel=POST_RNN_KERNEL,
     blank_logit_bias=BLANK_LOGIT_BIAS,
     cosine_scale_init=COSINE_SCALE_INIT,
     dropout=DROPOUT,
@@ -504,7 +542,9 @@ print(
     f"grad_clip={GRAD_CLIP}, ema_decay={EMA_DECAY}, use_amp={USE_AMP}, "
     f"aux_ctc_weight={AUX_CTC_WEIGHT}, width_mask={WIDTH_MASK}, width_mask_prob={WIDTH_MASK_PROB}, "
     f"use_cosine_classifier={USE_COSINE_CLASSIFIER}, use_weight_norm_classifier={USE_WEIGHT_NORM_CLASSIFIER}, "
-    f"use_head_gate={USE_HEAD_GATE}, blank_logit_bias={BLANK_LOGIT_BIAS}, cosine_scale_init={COSINE_SCALE_INIT}"
+    f"use_head_gate={USE_HEAD_GATE}, use_post_rnn_refine={USE_POST_RNN_REFINE}, "
+    f"post_rnn_kernel={POST_RNN_KERNEL}, blank_logit_bias={BLANK_LOGIT_BIAS}, "
+    f"cosine_scale_init={COSINE_SCALE_INIT}"
 )
 
 
