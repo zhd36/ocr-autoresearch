@@ -277,6 +277,7 @@ class CRNN(nn.Module):
         self.classifier_weight = None
         self.classifier_bias = None
         self.logit_scale = None
+        self.blank_logit_offset = 0.0
         if config.use_cosine_classifier:
             self.classifier_weight = nn.Parameter(torch.empty(num_classes, self.encoder.out_channels))
             self.classifier_bias = nn.Parameter(torch.zeros(num_classes))
@@ -292,13 +293,23 @@ class CRNN(nn.Module):
                 with torch.no_grad():
                     target_bias[0] = config.blank_logit_bias
 
+    def set_dropout_rate(self, p):
+        self.dropout.p = max(0.0, min(0.95, float(p)))
+
+    def set_blank_logit_offset(self, offset):
+        self.blank_logit_offset = float(offset)
+
     def project_logits(self, x):
         if self.classifier is not None:
-            return self.classifier(x)
-        features = F.normalize(x, dim=-1)
-        weights = F.normalize(self.classifier_weight, dim=-1)
-        scale = self.logit_scale.clamp(max=math.log(100.0)).exp()
-        return scale * F.linear(features, weights) + self.classifier_bias
+            logits = self.classifier(x)
+        else:
+            features = F.normalize(x, dim=-1)
+            weights = F.normalize(self.classifier_weight, dim=-1)
+            scale = self.logit_scale.clamp(max=math.log(100.0)).exp()
+            logits = scale * F.linear(features, weights) + self.classifier_bias
+        if self.blank_logit_offset != 0.0:
+            logits[..., 0] = logits[..., 0] + self.blank_logit_offset
+        return logits
 
     def classify(self, x):
         if self.training and self.config.num_dropout_samples > 1:
@@ -457,10 +468,14 @@ USE_HEAD_GATE = env_bool("USE_HEAD_GATE", False)
 USE_POST_RNN_REFINE = env_bool("USE_POST_RNN_REFINE", False)
 POST_RNN_KERNEL = env_int("POST_RNN_KERNEL", 3)
 BLANK_LOGIT_BIAS = env_float("BLANK_LOGIT_BIAS", 0.0)
+BLANK_LOGIT_OFFSET_START = env_float("BLANK_LOGIT_OFFSET_START", 0.0)
+BLANK_LOGIT_OFFSET_END = env_float("BLANK_LOGIT_OFFSET_END", BLANK_LOGIT_OFFSET_START)
 COSINE_SCALE_INIT = env_float("COSINE_SCALE_INIT", 12.0)
 WIDTH_MASK = env_int("WIDTH_MASK", 0)
 WIDTH_MASK_PROB = env_float("WIDTH_MASK_PROB", 0.0)
 DROPOUT = env_float("DROPOUT", 0.1)
+DROPOUT_START = env_float("DROPOUT_START", DROPOUT)
+DROPOUT_END = env_float("DROPOUT_END", DROPOUT_START)
 
 # Misc
 SEED = env_int("SEED", 1337)
@@ -513,6 +528,8 @@ assert TOTAL_BATCH_SIZE % DEVICE_BATCH_SIZE == 0
 grad_accum_steps = TOTAL_BATCH_SIZE // DEVICE_BATCH_SIZE
 
 model = CRNN(config, num_classes=codec.num_classes).to(device)
+model.set_dropout_rate(DROPOUT_START)
+model.set_blank_logit_offset(BLANK_LOGIT_OFFSET_START)
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, betas=BETAS, weight_decay=WEIGHT_DECAY)
 ema_model = None
 if EMA_DECAY > 0.0:
@@ -544,7 +561,8 @@ print(
     f"use_cosine_classifier={USE_COSINE_CLASSIFIER}, use_weight_norm_classifier={USE_WEIGHT_NORM_CLASSIFIER}, "
     f"use_head_gate={USE_HEAD_GATE}, use_post_rnn_refine={USE_POST_RNN_REFINE}, "
     f"post_rnn_kernel={POST_RNN_KERNEL}, blank_logit_bias={BLANK_LOGIT_BIAS}, "
-    f"cosine_scale_init={COSINE_SCALE_INIT}"
+    f"blank_logit_offset_start={BLANK_LOGIT_OFFSET_START}, blank_logit_offset_end={BLANK_LOGIT_OFFSET_END}, "
+    f"dropout_start={DROPOUT_START}, dropout_end={DROPOUT_END}, cosine_scale_init={COSINE_SCALE_INIT}"
 )
 
 
@@ -562,6 +580,13 @@ epoch = 1
 while True:
     progress = min(total_training_time / TIME_BUDGET, 1.0)
     lr = get_lr(progress)
+    current_dropout = DROPOUT_START + (DROPOUT_END - DROPOUT_START) * progress
+    current_blank_logit_offset = BLANK_LOGIT_OFFSET_START + (BLANK_LOGIT_OFFSET_END - BLANK_LOGIT_OFFSET_START) * progress
+    model.set_dropout_rate(current_dropout)
+    model.set_blank_logit_offset(current_blank_logit_offset)
+    if ema_model is not None:
+        ema_model.set_dropout_rate(current_dropout)
+        ema_model.set_blank_logit_offset(current_blank_logit_offset)
     for group in optimizer.param_groups:
         group["lr"] = lr
 
