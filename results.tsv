@@ -109,3 +109,4 @@ c90e277	0.632679	0.141921	3.4	discard	linearly ramp dropout to high regime
 73caf8c	0.559727	0.211790	3.4	keep	late high-dropout from stable start
 c83829e	0.620734	0.131004	3.4	discard	reproducibility check for dropout schedule best
 025cf28	0.634386	0.146288	3.4	discard	combine dropout schedule with early blank offset
+0d57c0a	0.625853	0.141921	3.4	discard	extend best dropout schedule to 10-minute budget

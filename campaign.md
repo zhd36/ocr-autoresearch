@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 111
-- Next round index: 112
+- Current logged rounds: 112
+- Next round index: 113
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -833,3 +833,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: once the dropout schedule is corrected, extra early blank suppression is no longer complementary. The schedule already appears to solve enough of the early-alignment problem that adding a strong blank offset just overconstrains the path distribution and gives back the gain.
 - Evidence: strong. This run is healthy and throughput even rises slightly, yet CER clearly regresses.
 - Next action: lock the schedule insight by itself and stop stacking blank-control tricks on top. After pushing this 4-round batch, the next decision is whether to exploit the new dynamics under the same 5-minute budget or follow the user suggestion and test the new best schedule with a 10-minute budget.
+
+### Round 112 - `0d57c0a` - extend best dropout schedule to 10-minute budget
+
+- Result: `val_cer=0.625853`, `word_acc=0.141921`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `73caf8c`: `+0.066126` CER worse
+- Keypoint: more training time is not automatically helpful in this regime. Reusing the 5-minute-optimal `0.2 -> 0.25` schedule for 10 minutes leads to a clearly worse result, which implies the model overfits or over-sharpens unless the regularization schedule is strengthened for the longer horizon.
+- Evidence: strong. The run is healthy and doubles exposure (`268.6K` samples, `8394` steps), yet validation quality regresses.
+- Next action: if continuing on the 10-minute branch, retune the schedule rather than assuming duration alone helps. The most coherent next test is a stronger late-dropout endpoint, such as `0.2 -> 0.3`, under the same 10-minute budget.
