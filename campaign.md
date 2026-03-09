@@ -5,18 +5,18 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 108
-- Next round index: 109
+- Current logged rounds: 109
+- Next round index: 110
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
 
 ## Current Best Result
 
-- Commit: `763771d`
-- Description: `higher dropout after big gain`
-- `val_cer`: `0.599403`
-- `word_acc`: `0.155022`
+- Commit: `73caf8c`
+- Description: `late high-dropout from stable start`
+- `val_cer`: `0.559727`
+- `word_acc`: `0.211790`
 - `memory_gb`: `3.4`
 
 ## Setup Status
@@ -809,3 +809,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: dropout timing does matter. A linear ramp from `0.1` to `0.25` is clearly healthier than the recent failed structural detours, which means the brittle high-dropout regime is at least partly a training-dynamics problem rather than a pure lucky scalar peak.
 - Evidence: useful and credible. This still misses the best by a visible margin, but it is much closer than the recent head-side or recurrent-compromise experiments.
 - Next action: keep the schedule hypothesis alive and move the start point upward. The next most justified test is `0.2 -> 0.25`, preserving the stronger early regularization of the stable regime while still chasing the late high-dropout benefit.
+
+### Round 109 - `73caf8c` - late high-dropout from stable start
+
+- Result: `val_cer=0.559727`, `word_acc=0.211790`, `memory_gb=3.4`, `status=keep`
+- Delta vs previous best `763771d`: `-0.039676` CER better
+- Keypoint: the main bottleneck was training-dynamics mismatch, not missing model capacity. Starting from the more stable `dropout=0.2` regime and only ramping to `0.25` later captures the big regularization gain without paying the early alignment penalty that made the static high-dropout setup brittle.
+- Evidence: very strong. This is a large CER improvement with a simultaneous jump in word accuracy, and compute remains essentially unchanged.
+- Next action: stay on this line immediately, but do not scatter. The next most informative move is a reproducibility check of the exact new schedule before broader bracketing, because earlier static high-dropout gains were noisy and this result is large enough to justify verification.
