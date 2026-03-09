@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 105
-- Next round index: 106
+- Current logged rounds: 106
+- Next round index: 107
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -785,3 +785,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: some extra sequence depth can still be competitive, but a full second LSTM layer spends too much of the 5-minute budget on recurrent compute. The result is much better than the recent bad head-side ideas, yet the step count drops all the way to `2944`, which leaves too little room for fitting.
 - Evidence: useful and fairly clear. This is not a catastrophic miss, but it does show that the one-layer advantage is strongly tied to throughput.
 - Next action: keep the sequence-depth hypothesis alive in a cheaper form. The next best test is a lightweight residual temporal refinement block on top of the one-layer `512` head, aiming to recover some extra sequence processing without paying full recurrent-layer cost.
+
+### Round 106 - `477ba67` - post-RNN temporal refine on stable one-layer head
+
+- Result: `val_cer=0.652304`, `word_acc=0.133188`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.052901` CER worse
+- Keypoint: the cheap temporal-depth substitute still costs too much relative to the gain it buys. Even a depthwise residual refinement after the LSTM reduces step count to `3037`, and the extra local mixing does not recover enough sequence quality to justify that budget loss.
+- Evidence: fairly strong. It is healthier than some bad head experiments, but clearly inferior to the simple one-layer base.
+- Next action: narrow the recurrent-compromise question one last time instead of adding more modules. The next informative test is a slightly cheaper two-layer LSTM, such as `hidden=288`, to see whether the benefit of extra recurrent depth survives once more throughput is recovered.
