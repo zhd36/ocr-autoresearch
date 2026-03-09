@@ -476,6 +476,8 @@ WIDTH_MASK_PROB = env_float("WIDTH_MASK_PROB", 0.0)
 DROPOUT = env_float("DROPOUT", 0.1)
 DROPOUT_START = env_float("DROPOUT_START", DROPOUT)
 DROPOUT_END = env_float("DROPOUT_END", DROPOUT_START)
+DROPOUT_RAMP_START_RATIO = env_float("DROPOUT_RAMP_START_RATIO", 0.0)
+DROPOUT_RAMP_END_RATIO = env_float("DROPOUT_RAMP_END_RATIO", 1.0)
 DROPOUT_SCHEDULE_POWER = env_float("DROPOUT_SCHEDULE_POWER", 1.0)
 
 # Misc
@@ -565,6 +567,8 @@ print(
     f"post_rnn_kernel={POST_RNN_KERNEL}, blank_logit_bias={BLANK_LOGIT_BIAS}, "
     f"blank_logit_offset_start={BLANK_LOGIT_OFFSET_START}, blank_logit_offset_end={BLANK_LOGIT_OFFSET_END}, "
     f"dropout_start={DROPOUT_START}, dropout_end={DROPOUT_END}, "
+    f"dropout_ramp_start_ratio={DROPOUT_RAMP_START_RATIO}, "
+    f"dropout_ramp_end_ratio={DROPOUT_RAMP_END_RATIO}, "
     f"dropout_schedule_power={DROPOUT_SCHEDULE_POWER}, cosine_scale_init={COSINE_SCALE_INIT}"
 )
 
@@ -583,7 +587,10 @@ epoch = 1
 while True:
     progress = min(total_training_time / TRAIN_TIME_BUDGET, 1.0)
     lr = get_lr(progress)
-    dropout_progress = progress ** DROPOUT_SCHEDULE_POWER
+    ramp_span = max(DROPOUT_RAMP_END_RATIO - DROPOUT_RAMP_START_RATIO, 1e-8)
+    ramp_progress = (progress - DROPOUT_RAMP_START_RATIO) / ramp_span
+    ramp_progress = min(max(ramp_progress, 0.0), 1.0)
+    dropout_progress = ramp_progress ** DROPOUT_SCHEDULE_POWER
     current_dropout = DROPOUT_START + (DROPOUT_END - DROPOUT_START) * dropout_progress
     current_blank_logit_offset = BLANK_LOGIT_OFFSET_START + (BLANK_LOGIT_OFFSET_END - BLANK_LOGIT_OFFSET_START) * progress
     model.set_dropout_rate(current_dropout)
