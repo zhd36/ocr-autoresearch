@@ -104,3 +104,4 @@ f332adb	0.685580	0.120087	3.4	discard	weight-normalized classifier on stable one
 fa03235	0.694539	0.122271	3.5	discard	deepen late encoder on stable one-layer head
 f747e97	0.640785	0.128821	3.4	discard	two-layer recurrent compromise on stable head
 477ba67	0.652304	0.133188	3.4	discard	post-RNN temporal refine on stable one-layer head
+594cc09	0.792235	0.054585	3.4	discard	cheaper two-layer recurrent compromise

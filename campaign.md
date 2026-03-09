@@ -5,8 +5,8 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 ## Scope
 
 - Minimum total rounds: 300
-- Current logged rounds: 106
-- Next round index: 107
+- Current logged rounds: 107
+- Next round index: 108
 - Remote branch: `origin/autoresearch/mar8`
 - Push cadence: push after every 4 newly completed rounds
 - Local runtime command: use `python prepare.py` and `python train.py` in this workspace
@@ -793,3 +793,11 @@ This file tracks the current OCR autoresearch campaign on branch `autoresearch/m
 - Keypoint: the cheap temporal-depth substitute still costs too much relative to the gain it buys. Even a depthwise residual refinement after the LSTM reduces step count to `3037`, and the extra local mixing does not recover enough sequence quality to justify that budget loss.
 - Evidence: fairly strong. It is healthier than some bad head experiments, but clearly inferior to the simple one-layer base.
 - Next action: narrow the recurrent-compromise question one last time instead of adding more modules. The next informative test is a slightly cheaper two-layer LSTM, such as `hidden=288`, to see whether the benefit of extra recurrent depth survives once more throughput is recovered.
+
+### Round 107 - `594cc09` - cheaper two-layer recurrent compromise
+
+- Result: `val_cer=0.792235`, `word_acc=0.054585`, `memory_gb=3.4`, `status=discard`
+- Delta vs best `763771d`: `+0.192832` CER worse
+- Keypoint: the recurrent-compromise line has collapsed. Shrinking the two-layer stack to recover throughput does not preserve the modest signal seen at `2x320`; it instead removes too much sequence capacity while still paying the depth cost, leaving this regime clearly dominated by the `1-layer, hidden=512` design.
+- Evidence: decisive. Both CER and word accuracy collapse, so this is not just a noisy underfit run.
+- Next action: close the current 104-107 batch and push it. The next experiments should treat `1-layer, hidden=512` as locked and search elsewhere rather than revisiting deeper recurrent compromises.
